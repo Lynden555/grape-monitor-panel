@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Grape Monitor",
+  "name": "Grape Monitor Pro - Sistema de Monitoreo",
   "icons": [
     {
       "src": "favicon.ico",
