@@ -30,48 +30,105 @@ const FolderType = {
 };
 
 const useFolderManager = () => {
-  const [folders, setFolders] = useState(() => {
-    const saved = localStorage.getItem('empresaFolders');
-    return saved ? JSON.parse(saved) : [];
+  const [folders, setFolders] = useState([]);
+  const [empresaFolderAssignments, setEmpresaFolderAssignments] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  // Obtener el scope del usuario
+  const getScope = () => ({
+    empresaId: localStorage.getItem('empresaId') || '',
+    ciudad: localStorage.getItem('ciudad') || '',
   });
 
-  const [empresaFolderAssignments, setEmpresaFolderAssignments] = useState(() => {
-    const saved = localStorage.getItem('empresaFolderAssignments');
-    return saved ? JSON.parse(saved) : {};
-  });
+  // Cargar carpetas y asignaciones desde la API
+  const loadFolderData = async () => {
+    try {
+      setLoading(true);
+      const { empresaId, ciudad } = getScope();
+      
+      if (!empresaId || !ciudad) return;
 
-  const [folderContextMenu, setFolderContextMenu] = useState({
-    open: false,
-    folder: null,
-    mouseX: 0,
-    mouseY: 0,
-  });
+      // Cargar carpetas
+      const foldersRes = await fetch(`${API_BASE}/api/carpetas?empresaId=${empresaId}&ciudad=${ciudad}`);
+      const foldersData = await foldersRes.json();
+      
+      if (foldersData.ok) {
+        setFolders(foldersData.data);
+      }
 
-  const [renameDialog, setRenameDialog] = useState({
-    open: false,
-    folder: null,
-    newName: '',
-  });
+      // Cargar asignaciones
+      const assignmentsRes = await fetch(`${API_BASE}/api/asignaciones?empresaPadreId=${empresaId}&ciudad=${ciudad}`);
+      const assignmentsData = await assignmentsRes.json();
+      
+      if (assignmentsData.ok) {
+        setEmpresaFolderAssignments(assignmentsData.data);
+      }
 
-  const [deleteDialog, setDeleteDialog] = useState({
-    open: false,
-    folder: null,
-  });
-
-
-  const assignEmpresaToFolder = (empresaId, folderId) => {
-    setEmpresaFolderAssignments(prev => ({
-      ...prev,
-      [empresaId]: folderId
-    }));
+    } catch (error) {
+      console.error('Error cargando datos de carpetas:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const removeEmpresaFromFolder = (empresaId) => {
-    setEmpresaFolderAssignments(prev => {
-      const newAssignments = { ...prev };
-      delete newAssignments[empresaId];
-      return newAssignments;
-    });
+  // Cargar datos al inicializar
+  useEffect(() => {
+    loadFolderData();
+  }, []);
+
+  const assignEmpresaToFolder = async (empresaId, folderId) => {
+    try {
+      const { empresaId: empresaPadreId, ciudad } = getScope();
+      
+      const res = await fetch(`${API_BASE}/api/asignaciones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          empresaId, 
+          carpetaId: folderId, 
+          empresaPadreId, 
+          ciudad 
+        })
+      });
+
+      const data = await res.json();
+      if (data.ok) {
+        setEmpresaFolderAssignments(prev => ({
+          ...prev,
+          [empresaId]: folderId
+        }));
+      }
+    } catch (error) {
+      console.error('Error asignando empresa a carpeta:', error);
+    }
+  };
+
+  const removeEmpresaFromFolder = async (empresaId) => {
+    try {
+      const { empresaId: empresaPadreId, ciudad } = getScope();
+      
+      const res = await fetch(`${API_BASE}/api/asignaciones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          empresaId, 
+          carpetaId: null, 
+          empresaPadreId, 
+          ciudad 
+        })
+      });
+
+      const data = await res.json();
+      if (data.ok) {
+        setEmpresaFolderAssignments(prev => {
+          const newAssignments = { ...prev };
+          delete newAssignments[empresaId];
+          return newAssignments;
+        });
+      }
+    } catch (error) {
+      console.error('Error removiendo empresa de carpeta:', error);
+    }
   };
 
   const moveEmpresaToFolder = (empresaId, folderId) => {
@@ -94,42 +151,88 @@ const useFolderManager = () => {
     );
   };
 
-  useEffect(() => {
-    localStorage.setItem('empresaFolders', JSON.stringify(folders));
-    localStorage.setItem('empresaFolderAssignments', JSON.stringify(empresaFolderAssignments));
-  }, [folders, empresaFolderAssignments]);
+  const createFolder = async (name, parentId = null) => {
+    try {
+      const { empresaId, ciudad } = getScope();
+      
+      const res = await fetch(`${API_BASE}/api/carpetas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          nombre: name.trim(), 
+          parentId,
+          empresaId, 
+          ciudad 
+        })
+      });
 
-  const createFolder = (name, parentId = null) => {
-    const newFolder = {
-      id: generateId(),
-      name: name.trim(),
-      type: FolderType.FOLDER,
-      parentId,
-      createdAt: new Date().toISOString(),
-    };
-    
-    setFolders(prev => [...prev, newFolder]);
-    return newFolder;
+      const data = await res.json();
+      if (data.ok) {
+        setFolders(prev => [...prev, data.data]);
+        return data.data;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error creando carpeta:', error);
+      return null;
+    }
   };
 
-  const renameFolder = (folderId, newName) => {
-    setFolders(prev => prev.map(folder => 
-      folder.id === folderId ? { ...folder, name: newName.trim() } : folder
-    ));
+  const renameFolder = async (folderId, newName) => {
+    try {
+      const { empresaId, ciudad } = getScope();
+      
+      const res = await fetch(`${API_BASE}/api/carpetas/${folderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          nombre: newName.trim(),
+          empresaId, 
+          ciudad 
+        })
+      });
+
+      const data = await res.json();
+      if (data.ok) {
+        setFolders(prev => prev.map(folder => 
+          folder._id === folderId ? { ...folder, nombre: newName.trim() } : folder
+        ));
+      }
+    } catch (error) {
+      console.error('Error renombrando carpeta:', error);
+    }
   };
 
-  const deleteFolder = (folderId) => {
-    setFolders(prev => prev.filter(folder => folder.id !== folderId));
+  const deleteFolder = async (folderId) => {
+    try {
+      const { empresaId, ciudad } = getScope();
+      
+      const res = await fetch(`${API_BASE}/api/carpetas/${folderId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          empresaId, 
+          ciudad 
+        })
+      });
+
+      const data = await res.json();
+      if (data.ok) {
+        setFolders(prev => prev.filter(folder => folder._id !== folderId));
+      }
+    } catch (error) {
+      console.error('Error eliminando carpeta:', error);
+    }
   };
 
   const getFolderPath = (folderId) => {
     const path = [];
-    let currentFolder = folders.find(f => f.id === folderId);
+    let currentFolder = folders.find(f => f._id === folderId);
     
     while (currentFolder) {
       path.unshift(currentFolder);
       currentFolder = currentFolder.parentId 
-        ? folders.find(f => f.id === currentFolder.parentId)
+        ? folders.find(f => f._id === currentFolder.parentId)
         : null;
     }
     
@@ -137,8 +240,30 @@ const useFolderManager = () => {
   };
 
   const getChildFolders = (parentId = null) => {
-    return folders.filter(folder => folder.parentId === parentId);
+    return folders.filter(folder => {
+      if (parentId === null) return !folder.parentId;
+      return folder.parentId === parentId;
+    });
   };
+
+  // ... (el resto del código de context menu permanece igual)
+  const [folderContextMenu, setFolderContextMenu] = useState({
+    open: false,
+    folder: null,
+    mouseX: 0,
+    mouseY: 0,
+  });
+
+  const [renameDialog, setRenameDialog] = useState({
+    open: false,
+    folder: null,
+    newName: '',
+  });
+
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    folder: null,
+  });
 
   const handleContextMenu = (event, folder) => {
     event.preventDefault();
@@ -160,7 +285,7 @@ const useFolderManager = () => {
     setRenameDialog({
       open: true,
       folder,
-      newName: folder.name,
+      newName: folder.nombre,
     });
     handleCloseContextMenu();
   };
@@ -173,19 +298,19 @@ const useFolderManager = () => {
     handleCloseContextMenu();
   };
 
-  const handleConfirmRename = () => {
-    if (renameDialog.folder && renameDialog.newName.trim()) {
-      renameFolder(renameDialog.folder.id, renameDialog.newName);
-      setRenameDialog({ open: false, folder: null, newName: '' });
-    }
-  };
+const handleConfirmRename = () => {
+  if (renameDialog.folder && renameDialog.newName.trim()) {
+    renameFolder(renameDialog.folder._id, renameDialog.newName); // ✅ CAMBIADO A _id
+    setRenameDialog({ open: false, folder: null, newName: '' });
+  }
+};
 
-  const handleConfirmDelete = () => {
-    if (deleteDialog.folder) {
-      deleteFolder(deleteDialog.folder.id);
-      setDeleteDialog({ open: false, folder: null });
-    }
-  };
+const handleConfirmDelete = () => {
+  if (deleteDialog.folder) {
+    deleteFolder(deleteDialog.folder._id); // ✅ CAMBIADO A _id
+    setDeleteDialog({ open: false, folder: null });
+  }
+};
 
   return {
     folders,
@@ -210,6 +335,8 @@ const useFolderManager = () => {
     handleConfirmDelete,
     setRenameDialog,
     setDeleteDialog,
+    loading,
+    reloadFolders: loadFolderData
   };
 };
 
@@ -586,16 +713,20 @@ const handleConfirmDeleteEmpresa = async () => {
     handleConfirmDelete,
     setRenameDialog,
     setDeleteDialog,
+    loading,
+    reloadFolders
   } = useFolderManager();
 
-  const handleFolderDrop = (e, folderId) => {
-    e.preventDefault();
-    const empresaId = e.dataTransfer.getData('empresaId');
-    if (empresaId) {
-      moveEmpresaToFolder(empresaId, folderId);
-      setSuccessMsg(`Empresa movida a la carpeta`);
-    }
-  };
+
+
+const handleFolderDrop = (e, folderId) => {
+  e.preventDefault();
+  const empresaId = e.dataTransfer.getData('empresaId');
+  if (empresaId) {
+    moveEmpresaToFolder(empresaId, folderId);
+    setSuccessMsg(`Empresa movida a la carpeta`);
+  }
+};
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -1003,27 +1134,38 @@ const handleCrearEmpresa = async () => {
 
   const cancelarEliminarEmpresa = () => setConfirmDeleteOpen(false);
 
-  const handleCreateFolder = () => {
-    if (newFolderName.trim()) {
-      createFolder(newFolderName.trim(), currentFolderId);
+const handleCreateFolder = async () => {
+  if (newFolderName.trim()) {
+    const success = await createFolder(newFolderName.trim(), currentFolderId);
+    if (success) {
       setNewFolderName('');
       setFolderDialogOpen(false);
       setSuccessMsg(`Carpeta "${newFolderName.trim()}" creada correctamente`);
+    } else {
+      setErrorMsg('Error creando carpeta');
     }
-  };
+  }
+};
 
   
-  const handleSelectFolder = (folder) => {
-    setCurrentFolderId(folder.id);
-  };
+const handleSelectFolder = (folder) => {
+  setCurrentFolderId(folder._id); // Cambiar .id por ._id
+};
 
-  const handleBackToRoot = () => {
-    setCurrentFolderId(null);
-  };
+const handleBackToRoot = () => {
+  setCurrentFolderId(null);
+};
 
-  const empresasEnCarpetaActual = useMemo(() => {
-    return getEmpresasInFolder(currentFolderId, empresas);
-  }, [empresas, currentFolderId, getEmpresasInFolder]);
+// 🆕 FUNCIÓN PARA NAVEGAR A CUALQUIER CARPETA DEL BREADCRUMB
+const navigateToFolder = (folderId) => {
+  setCurrentFolderId(folderId);
+};
+
+const empresasEnCarpetaActual = useMemo(() => {
+  return getEmpresasInFolder(currentFolderId, empresas);
+}, [empresas, currentFolderId, getEmpresasInFolder]);
+
+
 
   const tonerPercent = (lvl, max) => {
     if (!max || max <= 0) return 0;
@@ -1094,35 +1236,40 @@ const handleCrearEmpresa = async () => {
         <Divider sx={{ borderColor: 'rgba(255, 107, 107, 0.3)', mx: 2 }} />
 
         <Box sx={{ p: 2, borderBottom: '1px solid rgba(79, 70, 222, 0.2)' }}>
-          <Button
-            fullWidth
-            startIcon={<CreateNewFolderIcon />}
-            onClick={() => setFolderDialogOpen(true)}
-            sx={{
-              color: 'white',
-              fontWeight: 800,
-              textTransform: 'none',
-              borderRadius: '12px',
-              bgcolor: '#fe5953',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-              border: '1px solid rgba(254, 89, 83, 0.3)',
-              mb: 1,
-              '&:hover': { 
-                bgcolor: '#ff6b66',
-                boxShadow: `
-                  0 0 10px #fe5953,
-                  0 0 20px #fe5953, 
-                  0 0 40px #fe5953,
-                  inset 0 0 10px rgba(254, 89, 83, 0.3)
-                `,
-                border: '1px solid rgba(254, 89, 83, 0.8)',
-                textShadow: '0 0 10px rgba(255,255,255,0.8)',
-                transform: 'translateY(-2px)'
-              }
-            }}
-          >
-            Crear Carpeta
-          </Button>
+<Button
+  fullWidth
+  startIcon={<CreateNewFolderIcon />}
+  onClick={() => setFolderDialogOpen(true)}
+  disabled={loading} // ✅ AGREGAR disabled cuando está loading
+  sx={{
+    color: 'white',
+    fontWeight: 800,
+    textTransform: 'none',
+    borderRadius: '12px',
+    bgcolor: '#fe5953',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+    border: '1px solid rgba(254, 89, 83, 0.3)',
+    mb: 1,
+    '&:hover': { 
+      bgcolor: '#ff6b66',
+      boxShadow: `
+        0 0 10px #fe5953,
+        0 0 20px #fe5953, 
+        0 0 40px #fe5953,
+        inset 0 0 10px rgba(254, 89, 83, 0.3)
+      `,
+      border: '1px solid rgba(254, 89, 83, 0.8)',
+      textShadow: '0 0 10px rgba(255,255,255,0.8)',
+      transform: 'translateY(-2px)'
+    },
+    '&:disabled': {
+      opacity: 0.6,
+      bgcolor: '#cccccc'
+    }
+  }}
+>
+  {loading ? 'Cargando...' : 'Crear Carpeta'} {/* ✅ MOSTRAR ESTADO */}
+</Button>
 
           <Button
             fullWidth
@@ -1154,95 +1301,134 @@ const handleCrearEmpresa = async () => {
           </Button>
         </Box>
 
-        {currentFolderId && (
-          <Box sx={{ p: 2, borderBottom: '1px solid rgba(79, 70, 222, 0.2)' }}>
-            <Button
-              fullWidth
-              onClick={handleBackToRoot}
-              sx={{
-                color: '#b8a9ff',
-                fontWeight: 600,
-                textTransform: 'none',
-                borderRadius: '8px',
-                border: '1px solid rgba(184, 169, 255, 0.3)',
-                bgcolor: 'rgba(184, 169, 255, 0.1)',
-                '&:hover': {
-                  bgcolor: 'rgba(184, 169, 255, 0.2)',
-                  border: '1px solid rgba(184, 169, 255, 0.6)'
-                }
-              }}
-            >
-              ← Volver al inicio
-            </Button>
-          </Box>
-        )}
-
-        <List
-          dense
-          subheader={
-            <ListSubheader
-              sx={{
-                bgcolor: 'transparent', color: '#d0bfff',
-                borderBottom: '1px solid rgba(79, 70, 222, 0.18)'
-              }}
-            >
-              {currentFolderId ? 'Contenido de la carpeta' : 'Empresas y Carpetas'}
-            </ListSubheader>
+{/* 🆕 SISTEMA DE BREADCRUMB PARA NAVEGAR ENTRE CARPETAS */}
+{(getFolderPath(currentFolderId).length > 0) && (
+  <Box sx={{ p: 2, borderBottom: '1px solid rgba(79, 70, 222, 0.2)' }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+      {/* Botón para ir al inicio */}
+      <Button
+        onClick={handleBackToRoot}
+        size="small"
+        sx={{
+          color: '#b8a9ff',
+          fontWeight: 600,
+          textTransform: 'none',
+          borderRadius: '6px',
+          border: '1px solid rgba(184, 169, 255, 0.3)',
+          bgcolor: 'rgba(184, 169, 255, 0.1)',
+          minWidth: 'auto',
+          px: 1,
+          '&:hover': {
+            bgcolor: 'rgba(184, 169, 255, 0.2)',
+            border: '1px solid rgba(184, 169, 255, 0.6)'
           }
-          sx={{ flex: 1, overflowY: 'auto' }}
-        >
-          {loadingEmpresas && (
-            <Box sx={{ px: 2, py: 1 }}>
-              <LinearProgress />
-            </Box>
-          )}
+        }}
+      >
+        🏠
+      </Button>
 
-          {getChildFolders(currentFolderId).map((folder) => (
-            <ListItemButton
-              key={folder.id}
-              onContextMenu={(e) => handleContextMenu(e, folder)}
-              onClick={() => handleSelectFolder(folder)}
-              onDrop={(e) => handleFolderDrop(e, folder.id)}
-              onDragOver={handleDragOver}
-              sx={{
-                color: 'white',
-                '&:hover': { 
-                  bgcolor: 'rgba(254, 89, 83, 0.08)',
-                  '& .folder-actions': { opacity: 1 }
-                }
-              }}
-            >
-              <FolderIcon sx={{ color: '#fe5953', mr: 1 }} />
-              <ListItemText
-                primary={
-                  <Typography sx={{ fontWeight: 700, color: '#fe5953' }}>
-                    {folder.name}
-                  </Typography>
-                }
-                secondary={
-                  <Typography sx={{ color: '#b8a9ff', fontSize: '0.75rem' }}>
-                    Carpeta
-                  </Typography>
-                }
-              />
-              <IconButton
-                size="small"
-                className="folder-actions"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleContextMenu(e, folder);
-                }}
-                sx={{ 
-                  opacity: 0, 
-                  color: '#b8a9ff',
-                  transition: 'opacity 0.2s',
-                  '&:hover': { color: 'white' }
-                }}
-              >
-                <MoreVertIcon />
-              </IconButton>
-            </ListItemButton>
-          ))}
+      {/* Breadcrumb con las carpetas */}
+      {getFolderPath(currentFolderId).map((folder, index) => (
+        <Box key={folder._id} sx={{ display: 'flex', alignItems: 'center' }}>
+          <Typography sx={{ color: '#b8a9ff', mx: 0.5 }}>/</Typography>
+          
+          <Button
+            onClick={() => navigateToFolder(folder._id)}
+            size="small"
+            sx={{
+              color: index === getFolderPath(currentFolderId).length - 1 ? '#fe5953' : '#b8a9ff',
+              fontWeight: index === getFolderPath(currentFolderId).length - 1 ? 700 : 500,
+              textTransform: 'none',
+              minWidth: 'auto',
+              px: 1,
+              fontSize: '0.8rem',
+              '&:hover': {
+                bgcolor: 'rgba(254, 89, 83, 0.1)',
+                color: '#fe5953'
+              }
+            }}
+          >
+            {folder.nombre}
+          </Button>
+        </Box>
+      ))}
+    </Box>
+  </Box>
+)}
+
+<List
+  dense
+  subheader={
+    <ListSubheader
+      sx={{
+        bgcolor: 'transparent', color: '#d0bfff',
+        borderBottom: '1px solid rgba(79, 70, 222, 0.18)'
+      }}
+    >
+      {currentFolderId ? 'Contenido de la carpeta' : 'Empresas y Carpetas'}
+    </ListSubheader>
+  }
+  sx={{ flex: 1, overflowY: 'auto' }}
+>
+  {/* ✅ AGREGAR LOADING PARA CARPETAS */}
+  {loading && (
+    <Box sx={{ px: 2, py: 1 }}>
+      <LinearProgress />
+    </Box>
+  )}
+
+  {loadingEmpresas && (
+    <Box sx={{ px: 2, py: 1 }}>
+      <LinearProgress />
+    </Box>
+  )}
+
+{getChildFolders(currentFolderId).map((folder) => (
+  <ListItemButton
+    key={folder._id} // ✅ CAMBIADO A _id
+    onContextMenu={(e) => handleContextMenu(e, folder)}
+    onClick={() => handleSelectFolder(folder)}
+    onDrop={(e) => handleFolderDrop(e, folder._id)} // ✅ CAMBIADO A _id
+    onDragOver={handleDragOver}
+    sx={{
+      color: 'white',
+      '&:hover': { 
+        bgcolor: 'rgba(254, 89, 83, 0.08)',
+        '& .folder-actions': { opacity: 1 }
+      }
+    }}
+  >
+    <FolderIcon sx={{ color: '#fe5953', mr: 1 }} />
+    <ListItemText
+      primary={
+        <Typography sx={{ fontWeight: 700, color: '#fe5953' }}>
+          {folder.nombre} {/* ✅ CAMBIADO A nombre */}
+        </Typography>
+      }
+      secondary={
+        <Typography sx={{ color: '#b8a9ff', fontSize: '0.75rem' }}>
+          Carpeta
+        </Typography>
+      }
+    />
+    <IconButton
+      size="small"
+      className="folder-actions"
+      onClick={(e) => {
+        e.stopPropagation();
+        handleContextMenu(e, folder);
+      }}
+      sx={{ 
+        opacity: 0, 
+        color: '#b8a9ff',
+        transition: 'opacity 0.2s',
+        '&:hover': { color: 'white' }
+      }}
+    >
+      <MoreVertIcon />
+    </IconButton>
+  </ListItemButton>
+))}
 
           {empresasEnCarpetaActual.map((empresa) => (
             <EmpresaListItem 
@@ -1255,11 +1441,11 @@ const handleCrearEmpresa = async () => {
             />
           ))}
           
-          {!loadingEmpresas && getChildFolders(currentFolderId).length === 0 && empresasEnCarpetaActual.length === 0 && (
-            <Typography sx={{ p: 2, color: '#b8a9ff', textAlign: 'center' }}>
-              {currentFolderId ? 'La carpeta está vacía' : 'No hay empresas. Crea la primera con el botón de arriba.'}
-            </Typography>
-          )}
+{!loading && !loadingEmpresas && getChildFolders(currentFolderId).length === 0 && empresasEnCarpetaActual.length === 0 && (
+  <Typography sx={{ p: 2, color: '#b8a9ff', textAlign: 'center' }}>
+    {currentFolderId ? 'La carpeta está vacía' : 'No hay empresas. Crea la primera con el botón de arriba.'}
+  </Typography>
+)}
         </List>
       </Card>
 
@@ -1417,7 +1603,7 @@ const handleCrearEmpresa = async () => {
               <Typography variant="h6" sx={{ color: '#b8a9ff', fontWeight: 800 }}>
                 {selectedEmpresa.nombre}
               </Typography>
-              <Chip label={`Empresa ID: ${selectedEmpresa._id}`} size="small" sx={{ ml: 1, color: '#d0bfff', border: '1px solid #4f46de' }} />
+              
               <Box sx={{ flex: 1 }} />
 
               <Button
@@ -1841,10 +2027,10 @@ const handleCrearEmpresa = async () => {
           }
         }}
       >
-        <DialogTitle sx={{ color: '#b8a9ff' }}>
-          <EditIcon sx={{ mr: 1, color: '#4f46de' }} />
-          Renombrar Carpeta
-        </DialogTitle>
+      <DialogTitle sx={{ color: '#b8a9ff' }}>
+        <EditIcon sx={{ mr: 1, color: '#4f46de' }} />
+        Renombrar Carpeta "{renameDialog.folder?.nombre}" {/* ✅ CAMBIADO A nombre */}
+      </DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
@@ -2189,9 +2375,9 @@ const handleCrearEmpresa = async () => {
           Eliminar Carpeta
         </DialogTitle>
         <DialogContent>
-          <Typography>
-            ¿Estás seguro de que quieres eliminar la carpeta "{deleteDialog.folder?.name}"?
-          </Typography>
+        <Typography>
+          ¿Estás seguro de que quieres eliminar la carpeta "{deleteDialog.folder?.nombre}"? {/* ✅ CAMBIADO A nombre */}
+        </Typography>
           <Typography sx={{ color: '#ff6b6b', mt: 1, fontWeight: 600 }}>
             Esta acción no se puede deshacer.
           </Typography>
