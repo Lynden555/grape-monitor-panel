@@ -18,7 +18,6 @@ import FolderIcon from '@mui/icons-material/Folder';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import BusinessIcon from '@mui/icons-material/Business';
 
 const API_BASE = 'https://grape-monitor-production.up.railway.app';
 
@@ -387,11 +386,11 @@ const EmpresaListItem = ({
         height: '65px'
       }}
     >
-      <BusinessIcon sx={{ 
-        color: isSelected ? '#fe5953' : '#ff9e80', 
-        mr: 2,
-        fontSize: '28px'
-      }} />
+<PrintIcon sx={{ 
+  color: isSelected ? '#fe5953' : '#ff9e80', 
+  mr: 2,
+  fontSize: '28px'
+}} />
       
       <ListItemText
         primary={
@@ -458,6 +457,7 @@ export default function EmpresasPanel() {
   const [generandoPDF, setGenerandoPDF] = useState(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
+  const [downloadAgentOpen, setDownloadAgentOpen] = useState(false);
 
   // 🆕 ESTADOS PARA MENÚ DE IMPRESORAS
   const [printerContextMenu, setPrinterContextMenu] = useState({
@@ -1297,9 +1297,44 @@ const empresasEnCarpetaActual = useMemo(() => {
               }
             }}
           >
-            Agregar Empresa
+            Agregar Impresora
           </Button>
+
+          <Button
+            fullWidth
+            startIcon={<DownloadIcon />}
+            onClick={() => setDownloadAgentOpen(true)}
+            sx={{
+              color: 'white',
+              fontWeight: 800,
+              textTransform: 'none',
+              borderRadius: '12px',
+              bgcolor: '#00c853',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+              border: '1px solid rgba(0, 200, 83, 0.3)',
+              mt: 4,
+              '&:hover': { 
+                bgcolor: '#00e676',
+                boxShadow: `
+                  0 0 10px #00c853,
+                  0 0 20px #00c853, 
+                  0 0 40px #00c853,
+                  inset 0 0 10px rgba(0, 200, 83, 0.3)
+                `,
+                border: '1px solid rgba(0, 200, 83, 0.8)',
+                textShadow: '0 0 10px rgba(255,255,255,0.8)',
+                transform: 'translateY(-2px)'
+              }
+            }}
+          >
+            Descargar Agente
+          </Button>
+          
         </Box>
+
+
+
+
 
 {/* 🆕 SISTEMA DE BREADCRUMB PARA NAVEGAR ENTRE CARPETAS */}
 {(getFolderPath(currentFolderId).length > 0) && (
@@ -2552,6 +2587,73 @@ const empresasEnCarpetaActual = useMemo(() => {
           </Button>
         </DialogActions>
       </Dialog>
+
+{/* 🆕 MODAL PARA DESCARGAR AGENTE */}
+<Dialog
+  open={downloadAgentOpen}
+  onClose={() => setDownloadAgentOpen(false)}
+  PaperProps={{
+    sx: {
+      bgcolor: '#351d79',
+      color: 'white',
+      border: '2px solid #00c853',
+      borderRadius: '16px',
+      boxShadow: '0 0 20px rgba(0, 200, 83, 0.4)'
+    }
+  }}
+>
+  <DialogTitle sx={{ color: '#b8a9ff', textAlign: 'center' }}>
+    <DownloadIcon sx={{ mr: 1, color: '#00c853' }} />
+    Descargar Agente Grape Monitor
+  </DialogTitle>
+  <DialogContent>
+    <Typography sx={{ textAlign: 'center', mb: 2 }}>
+      ¿Estás seguro de que quieres descargar el Agente de Copias?
+    </Typography>
+    <Alert severity="info" sx={{ 
+      bgcolor: 'rgba(0, 200, 83, 0.1)', 
+      color: '#80e27e',
+      border: '1px solid rgba(0, 200, 83, 0.3)'
+    }}>
+      El Agente es un ejecutable que se instala en las computadoras con impresoras para monitorearlas automáticamente.
+    </Alert>
+  </DialogContent>
+  <DialogActions sx={{ justifyContent: 'center', gap: 2, p: 3 }}>
+    <Button 
+      onClick={() => setDownloadAgentOpen(false)}
+      sx={{ 
+        color: '#b8a9ff',
+        border: '1px solid #4f46de',
+        borderRadius: '8px',
+        px: 3
+      }}
+    >
+      Cancelar
+    </Button>
+    <Button 
+      onClick={() => {
+        window.open('https://github.com/tu-usuario/tu-repositorio/releases/latest', '_blank');
+        setDownloadAgentOpen(false);
+        setSuccessMsg('✅ Redirigiendo para descargar el Agente...');
+      }}
+      variant="contained"
+      sx={{ 
+        bgcolor: '#00c853', 
+        color: 'white',
+        borderRadius: '8px',
+        px: 3,
+        '&:hover': { 
+          bgcolor: '#00e676',
+          boxShadow: '0 0 15px rgba(0, 200, 83, 0.6)'
+        }
+      }}
+    >
+      ✅ Descargar
+    </Button>
+  </DialogActions>
+</Dialog>
+
+
     </Box>
   );
 }
