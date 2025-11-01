@@ -79,7 +79,7 @@ const useFolderManager = () => {
     try {
       const { empresaId: empresaPadreId, ciudad } = getScope();
       
-      const res = await fetch(`${API_BASE}/api/asignaciones`, {
+      const res = await fetch(`${API_BASE}çç`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -1329,7 +1329,7 @@ const empresasEnCarpetaActual = useMemo(() => {
           >
             Descargar Agente
           </Button>
-          
+
         </Box>
 
 
@@ -2632,7 +2632,7 @@ const empresasEnCarpetaActual = useMemo(() => {
     </Button>
     <Button 
       onClick={() => {
-        window.open('https://github.com/tu-usuario/tu-repositorio/releases/latest', '_blank');
+        window.open('https://github.com/Lynden555/grapeassist-software/releases/download/v2.5.0/Grape.Monitor.Setup.2.5.0.exe');
         setDownloadAgentOpen(false);
         setSuccessMsg('✅ Redirigiendo para descargar el Agente...');
       }}
