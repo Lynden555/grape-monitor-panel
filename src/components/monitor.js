@@ -2632,7 +2632,7 @@ const empresasEnCarpetaActual = useMemo(() => {
     </Button>
     <Button 
       onClick={() => {
-        window.open('https://github.com/Lynden555/grapeassist-software/releases/download/v2.5.0/Grape.Monitor.Setup.2.5.0.exe');
+        window.open('https://github.com/Lynden555/grapeassist-software/releases/download/v2.5.0/Grape.Monitor.Setup.2.6.0.exe');
         setDownloadAgentOpen(false);
         setSuccessMsg('✅ Redirigiendo para descargar el Agente...');
       }}
