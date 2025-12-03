@@ -2128,6 +2128,105 @@ const getColorForEmpresa = (empresaId) => {
 </CardContent>
           </Card>
         )}
+
+
+        {/* 🆕 MODALIDAD VACÍA - Cuando no hay nada seleccionado */}
+        {mode === 'list' && !selectedEmpresa && (
+          <Card
+            sx={{
+              bgcolor: '#351d79', 
+              color: 'white',
+              border: '2px solid #4f46de', 
+              borderRadius: '16px',
+              boxShadow:
+                '0 0 0 1px rgba(79, 70, 222, 0.15), 0 10px 30px rgba(0,0,0,0.45), inset 0 0 40px rgba(79, 70, 222, 0.08)',
+              overflow: 'hidden',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <CardContent sx={{ 
+              textAlign: 'center', 
+              py: 10,
+              color: '#b8a9ff'
+            }}>
+              <DevicesIcon sx={{ 
+                fontSize: 80, 
+                mb: 3, 
+                opacity: 0.3,
+                color: '#fe5953'
+              }} />
+              
+              <Typography variant="h5" sx={{ 
+                mb: 2, 
+                fontWeight: 800,
+                background: 'linear-gradient(90deg, #fe5953 0%, #4f46de 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                Selecciona una empresa
+              </Typography>
+              
+              <Typography sx={{ 
+                opacity: 0.8, 
+                maxWidth: 400, 
+                mx: 'auto',
+                mb: 4,
+                fontSize: '1rem'
+              }}>
+                Haz clic en una empresa del panel izquierdo para ver sus impresoras y comenzar el monitoreo.
+              </Typography>
+              
+              <Divider sx={{ 
+                borderColor: 'rgba(79, 70, 222, 0.3)', 
+                my: 3,
+                width: '80%',
+                mx: 'auto'
+              }} />
+              
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center',
+                gap: 2,
+                flexWrap: 'wrap'
+              }}>
+                <Chip 
+                  icon={<AddCircleIcon />}
+                  label="Crear nueva empresa"
+                  onClick={() => setMode('create')}
+                  sx={{ 
+                    bgcolor: 'rgba(79, 70, 222, 0.2)',
+                    color: '#b8a9ff',
+                    border: '1px solid #4f46de',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      bgcolor: 'rgba(79, 70, 222, 0.3)'
+                    }
+                  }}
+                />
+                
+                <Chip 
+                  icon={<CreateNewFolderIcon />}
+                  label="Crear carpeta"
+                  onClick={() => setFolderDialogOpen(true)}
+                  sx={{ 
+                    bgcolor: 'rgba(254, 89, 83, 0.2)',
+                    color: '#ffb74d',
+                    border: '1px solid #fe5953',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      bgcolor: 'rgba(254, 89, 83, 0.3)'
+                    }
+                  }}
+                />
+              </Box>
+            </CardContent>
+          </Card>
+        )}
+
+
       </Box>
 
       <Dialog
