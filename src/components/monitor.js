@@ -1846,8 +1846,15 @@ const getColorForEmpresa = (empresaId) => {
 <CardContent sx={{ p: 2 }}>
   {loadingPrinters && <LinearProgress />}
 
-  {/* 🆕 MENSAJE CUANDO NO HAY EMPRESA SELECCIONADA */}
-  {!loadingPrinters && (!selectedEmpresa || printers.length === 0) && (
+  {/* 🆕 CASO 1: CARGANDO */}
+  {loadingPrinters && (
+    <Box sx={{ textAlign: 'center', py: 8, color: '#b8a9ff' }}>
+      <Typography>Cargando impresoras...</Typography>
+    </Box>
+  )}
+
+  {/* 🆕 CASO 2: NO HAY IMPRESORAS (pero SÍ hay empresa seleccionada) */}
+  {!loadingPrinters && selectedEmpresa && printers.length === 0 && (
     <Box sx={{ 
       textAlign: 'center', 
       py: 8,
@@ -1855,275 +1862,270 @@ const getColorForEmpresa = (empresaId) => {
     }}>
       <DevicesIcon sx={{ fontSize: 60, mb: 2, opacity: 0.5 }} />
       <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>
-        {selectedEmpresa ? 'No hay impresoras' : 'Selecciona una empresa'}
+        No hay impresoras
       </Typography>
       <Typography sx={{ opacity: 0.8, maxWidth: 400, mx: 'auto' }}>
-        {selectedEmpresa 
-          ? 'Esta empresa aún no tiene impresoras configuradas. Configura el agente para comenzar el monitoreo.'
-          : 'Haz clic en una empresa del panel izquierdo para ver sus impresoras.'
-        }
+        Esta empresa aún no tiene impresoras configuradas.<br />
+        Configura el agente para comenzar el monitoreo.
       </Typography>
     </Box>
   )}
-{!loadingPrinters && selectedEmpresa && printers.length > 0 && (
-              <Stack spacing={1.5}>
-                {printers.map((p) => {
-                  const latest = p.latest || {};
-                  const low = !!latest.lowToner;
-                  const online  = (typeof p.online === 'boolean') ? p.online : (latest.derivedOnline ?? (latest.online !== false));
-                  return (
-                    
-<Box
-  key={p._id}
-  sx={{
-    p: 1.5, borderRadius: 2,
-    border: '1px solid rgba(79, 70, 222, 0.18)',
-    bgcolor: 'rgba(46, 0, 79, 0.35)',
-  }}
->
-  <ListItemButton
-    onClick={() => setExpandedPrinterId(expandedPrinterId === p._id ? null : p._id)}
-    onContextMenu={(e) => handlePrinterContextMenu(e, p)}
-    sx={{ 
-      display: 'flex',
-      alignItems: 'center', 
-      gap: 1,
-      position: 'relative',
-      color: 'white',
-      '&:hover': { 
-        bgcolor: 'rgba(254, 89, 83, 0.08)',
-        '& .printer-actions': { opacity: 1 }
-      }
-    }}
-  >
 
-<PrintIcon sx={{ color:'#b8a9ff' }} />
-<Typography sx={{ fontWeight:800 }}>
-  {p.printerName || p.sysName || p.host}
-</Typography>
+  {/* 🆕 CASO 3: HAY IMPRESORAS */}
+  {!loadingPrinters && printers.length > 0 && (
+    <Stack spacing={1.5}>
+      {printers.map((p) => {
+        const latest = p.latest || {};
+        const low = !!latest.lowToner;
+        const online  = (typeof p.online === 'boolean') ? p.online : (latest.derivedOnline ?? (latest.online !== false));
+        return (
+          
+          <Box
+            key={p._id}
+            sx={{
+              p: 1.5, borderRadius: 2,
+              border: '1px solid rgba(79, 70, 222, 0.18)',
+              bgcolor: 'rgba(46, 0, 79, 0.35)',
+            }}
+          >
+            <ListItemButton
+              onClick={() => setExpandedPrinterId(expandedPrinterId === p._id ? null : p._id)}
+              onContextMenu={(e) => handlePrinterContextMenu(e, p)}
+              sx={{ 
+                display: 'flex',
+                alignItems: 'center', 
+                gap: 1,
+                position: 'relative',
+                color: 'white',
+                '&:hover': { 
+                  bgcolor: 'rgba(254, 89, 83, 0.08)',
+                  '& .printer-actions': { opacity: 1 }
+                }
+              }}
+            >
+              <PrintIcon sx={{ color:'#b8a9ff' }} />
+              <Typography sx={{ fontWeight:800 }}>
+                {p.printerName || p.sysName || p.host}
+              </Typography>
 
-<Chip
-  label={online ? 'Online' : 'Offline'}
-  size="small"
-  sx={{
-    ml: 1,
-    fontWeight: 700,
-    borderRadius: '10px',
-    ...(online
-    ? {
-        color: '#00ffaa',
-        border: '1px solid #00ffaa',
-        bgcolor: 'rgba(0,255,170,0.10)',
-        boxShadow: '0 0 10px rgba(0,255,170,0.35) inset',
-        }
-    : {
-        color: '#ff6b6b',
-        border: '1px solid #ff6b6b',
-        bgcolor: 'rgba(255,0,72,0.10)',
-        boxShadow: '0 0 10px rgba(255,0,72,0.35) inset',
-        })
-  }}
-/>
+              <Chip
+                label={online ? 'Online' : 'Offline'}
+                size="small"
+                sx={{
+                  ml: 1,
+                  fontWeight: 700,
+                  borderRadius: '10px',
+                  ...(online
+                  ? {
+                      color: '#00ffaa',
+                      border: '1px solid #00ffaa',
+                      bgcolor: 'rgba(0,255,170,0.10)',
+                      boxShadow: '0 0 10px rgba(0,255,170,0.35) inset',
+                      }
+                  : {
+                      color: '#ff6b6b',
+                      border: '1px solid #ff6b6b',
+                      bgcolor: 'rgba(255,0,72,0.10)',
+                      boxShadow: '0 0 10px rgba(255,0,72,0.35) inset',
+                      })
+                }}
+              />
 
-    {low && (
-      <Tooltip title="Tóner bajo">
-        <WarningAmberIcon sx={{ color:'#ffb74d', ml:.5 }} />
-      </Tooltip>
-    )}
-
-    {/* BOTÓN DE 3 PUNTOS PARA IMPRESORAS */}
-    <IconButton
-      size="small"
-      className="printer-actions"
-      onClick={(e) => {
-        e.stopPropagation();
-        handlePrinterContextMenu(e, p);
-      }}
-      sx={{ 
-        opacity: 0, 
-        color: '#b8a9ff',
-        transition: 'opacity 0.2s',
-        '&:hover': { 
-          color: 'white'
-        }
-      }}
-    >
-      <MoreVertIcon />
-    </IconButton>
-
-    <Box sx={{ flex: 1 }} />
-    <Typography sx={{ color:'#b8a9ff' }}>{p.host}</Typography>
-    
-  </ListItemButton>
-    
-    
-
-                    
-
-                      {expandedPrinterId === p._id && (() => {
-                        const latest = p.latest || {};
-                        return (
-                          <>
-                            <Divider sx={{ my: 1, borderColor:'rgba(79, 70, 222, 0.2)' }} />
-                            <Box sx={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:2 }}>
-                              <Box>
-                                <Typography sx={{ color:'#d0bfff' }}>Serial</Typography>
-                                <Typography sx={{ fontFamily:'monospace' }}>{p.serial || '—'}</Typography>
-
-                                <Typography sx={{ color:'#d0bfff', mt:1 }}>Modelo</Typography>
-                                <Typography sx={{ fontFamily:'monospace' }}>{p.model || p.sysDescr || '—'}</Typography>
-
-                                <Typography sx={{ color:'#d0bfff', mt:1 }}>Última lectura</Typography>
-                                <Typography sx={{ fontFamily:'monospace' }}>
-                                  {latest.lastSeenAt ? new Date(latest.lastSeenAt).toLocaleString() : '—'}
-                                </Typography>
-
-                                <Typography sx={{ color:'#d0bfff', mt:1 }}>Contador de páginas</Typography>
-                                <Typography sx={{ fontWeight:800 }}>{latest.lastPageCount ?? '—'}</Typography>
-
-                                <Typography sx={{ color:'#d0bfff', mt:1 }}>Contador B/N</Typography>
-                                <Typography sx={{ fontWeight:800 }}>{latest.lastPageMono ?? '—'}</Typography>
-
-                                {latest.lastPageColor != null && latest.lastPageColor > 0 && (
-                                  <>
-                                    <Typography sx={{ color:'#d0bfff', mt:1 }}>Contador Color</Typography>
-                                    <Typography sx={{ fontWeight:800 }}>{latest.lastPageColor}</Typography>
-                                  </>
-                                )}
-                              </Box>
-
-                              <Box sx={{ mt: 3, p: 2, border: '1px solid rgba(79, 70, 222, 0.3)', borderRadius: 2, bgcolor: 'rgba(46, 0, 79, 0.4)' }}>
-                                <Typography sx={{ color: '#b8a9ff', fontWeight: 700, mb: 1.5, fontSize: '14px' }}>
-                                  📊 REPORTES MENSUALES
-                                </Typography>
-                                
-                                <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap', gap: 1 }}>
-                                  <Button
-                                    variant="contained"
-                                    size="small"
-                                    onClick={() => handleConfirmarCorte(p._id)}
-                                    disabled={generandoCorte === p._id}
-                                    startIcon={generandoCorte === p._id ? null : <>📅</>}
-                                    sx={{
-                                      bgcolor: '#4caf50',
-                                      color: 'white',
-                                      fontWeight: 700,
-                                      borderRadius: '8px',
-                                      px: 2,
-                                      py: 1,
-                                      minWidth: '140px',
-                                      boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-                                      border: '1px solid rgba(76, 175, 80, 0.3)',
-                                      '&:hover': { 
-                                        bgcolor: '#43a047',
-                                        boxShadow: `
-                                          0 0 10px #4caf50,
-                                          0 0 20px #4caf50,
-                                          0 0 40px #4caf50,
-                                          inset 0 0 10px rgba(76, 175, 80, 0.3)
-                                        `,
-                                        border: '1px solid rgba(76, 175, 80, 0.8)',
-                                        textShadow: '0 0 10px rgba(255,255,255,0.8)',
-                                        transform: 'translateY(-2px)'
-                                      },
-                                      '&:disabled': { opacity: 0.6 }
-                                    }}
-                                  >
-                                    {generandoCorte === p._id ? '⌛ Registrando...' : 'Registrar Corte'}
-                                  </Button>
-
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    onClick={() => handleGenerarPDF(p._id)}
-                                    disabled={generandoPDF === p._id}
-                                    startIcon={generandoPDF === p._id ? null : <>📄</>}
-                                    sx={{
-                                      borderColor: '#4f46de',
-                                      color: '#b8a9ff',
-                                      fontWeight: 700,
-                                      borderRadius: '8px',
-                                      px: 2,
-                                      py: 1,
-                                      minWidth: '140px',
-                                      boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-                                      '&:hover': { 
-                                        bgcolor: 'rgba(79, 70, 222, 0.1)',
-                                        borderColor: '#b8a9ff',
-                                        boxShadow: `
-                                          0 0 10px #4f46de,
-                                          0 0 20px #4f46de,
-                                          inset 0 0 10px rgba(79, 70, 222, 0.1)
-                                        `,
-                                        textShadow: '0 0 10px rgba(184, 169, 255, 0.8)',
-                                        transform: 'translateY(-2px)'
-                                      },
-                                      '&:disabled': { opacity: 0.6 }
-                                    }}
-                                  >
-                                    {generandoPDF === p._id ? '⌛ Generando...' : 'Generar PDF'}
-                                  </Button>
-                                </Stack>
-                                
-                                <Typography sx={{ color: '#b8a9ff', fontSize: '13px', mt: 1, opacity: 0.8 }}>
-                                  Primero registra un corte, luego genera el reporte PDF
-                                </Typography>
-                                
-                                <Typography sx={{ color: '#d0bfff', fontSize: '14px', mt: 0.5, opacity: 0.7 }}>
-                                  {latest.lastCutDate 
-                                    ? `Fecha del último corte: ${new Date(latest.lastCutDate).toLocaleDateString('es-ES', { 
-                                        day: '2-digit', 
-                                        month: '2-digit', 
-                                        year: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                      })}`
-                                    : 'Aún no se ha registrado ningún corte'
-                                  }
-                                </Typography>
-                              </Box>
-
-                              <Box>
-                                <Typography sx={{ color:'#d0bfff', mb:1 }}>Consumibles</Typography>
-                                <Stack spacing={1}>
-                                  {(latest.lastSupplies || []).map((s, idx) => {
-                                    const pct = tonerPercent(s.level, s.max);
-                                    return (
-                                      <Box key={idx}>
-                                        <Box sx={{ display:'flex', justifyContent:'space-between' }}>
-                                          <Typography>{s.name || `Supply ${idx+1}`}</Typography>
-                                          <Typography sx={{ color: pct<=20 ? '#ff9e9e' : '#9de6a2' }}>
-                                            {isFinite(pct) ? `${pct}%` : '—'}
-                                          </Typography>
-                                        </Box>
-                                        <LinearProgress
-                                          variant="determinate"
-                                          value={isFinite(pct) ? pct : 0}
-                                          sx={{
-                                            height: 8,
-                                            borderRadius: 6,
-                                            bgcolor: 'rgba(255,255,255,0.08)',
-                                            '& .MuiLinearProgress-bar': { transition: 'width .3s' }
-                                          }}
-                                        />
-                                      </Box>
-                                    );
-                                  })}
-                                  {(!latest.lastSupplies || latest.lastSupplies.length === 0) && (
-                                    <Typography sx={{ color:'#b8a9ff' }}>Sin datos de tóner.</Typography>
-                                  )}
-                                </Stack>
-                              </Box>
-                            </Box>
-                          </>
-                        );
-                      })()}
-                    </Box>
-                  );
-                })}
-              </Stack>
+              {low && (
+                <Tooltip title="Tóner bajo">
+                  <WarningAmberIcon sx={{ color:'#ffb74d', ml:.5 }} />
+                </Tooltip>
               )}
-            </CardContent>
+
+              {/* BOTÓN DE 3 PUNTOS PARA IMPRESORAS */}
+              <IconButton
+                size="small"
+                className="printer-actions"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePrinterContextMenu(e, p);
+                }}
+                sx={{ 
+                  opacity: 0, 
+                  color: '#b8a9ff',
+                  transition: 'opacity 0.2s',
+                  '&:hover': { 
+                    color: 'white'
+                  }
+                }}
+              >
+                <MoreVertIcon />
+              </IconButton>
+
+              <Box sx={{ flex: 1 }} />
+              <Typography sx={{ color:'#b8a9ff' }}>{p.host}</Typography>
+              
+            </ListItemButton>
+            
+            {expandedPrinterId === p._id && (() => {
+              const latest = p.latest || {};
+              return (
+                <>
+                  <Divider sx={{ my: 1, borderColor:'rgba(79, 70, 222, 0.2)' }} />
+                  <Box sx={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:2 }}>
+                    <Box>
+                      <Typography sx={{ color:'#d0bfff' }}>Serial</Typography>
+                      <Typography sx={{ fontFamily:'monospace' }}>{p.serial || '—'}</Typography>
+
+                      <Typography sx={{ color:'#d0bfff', mt:1 }}>Modelo</Typography>
+                      <Typography sx={{ fontFamily:'monospace' }}>{p.model || p.sysDescr || '—'}</Typography>
+
+                      <Typography sx={{ color:'#d0bfff', mt:1 }}>Última lectura</Typography>
+                      <Typography sx={{ fontFamily:'monospace' }}>
+                        {latest.lastSeenAt ? new Date(latest.lastSeenAt).toLocaleString() : '—'}
+                      </Typography>
+
+                      <Typography sx={{ color:'#d0bfff', mt:1 }}>Contador de páginas</Typography>
+                      <Typography sx={{ fontWeight:800 }}>{latest.lastPageCount ?? '—'}</Typography>
+
+                      <Typography sx={{ color:'#d0bfff', mt:1 }}>Contador B/N</Typography>
+                      <Typography sx={{ fontWeight:800 }}>{latest.lastPageMono ?? '—'}</Typography>
+
+                      {latest.lastPageColor != null && latest.lastPageColor > 0 && (
+                        <>
+                          <Typography sx={{ color:'#d0bfff', mt:1 }}>Contador Color</Typography>
+                          <Typography sx={{ fontWeight:800 }}>{latest.lastPageColor}</Typography>
+                        </>
+                      )}
+                    </Box>
+
+                    <Box sx={{ mt: 3, p: 2, border: '1px solid rgba(79, 70, 222, 0.3)', borderRadius: 2, bgcolor: 'rgba(46, 0, 79, 0.4)' }}>
+                      <Typography sx={{ color: '#b8a9ff', fontWeight: 700, mb: 1.5, fontSize: '14px' }}>
+                        📊 REPORTES MENSUALES
+                      </Typography>
+                      
+                      <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap', gap: 1 }}>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          onClick={() => handleConfirmarCorte(p._id)}
+                          disabled={generandoCorte === p._id}
+                          startIcon={generandoCorte === p._id ? null : <>📅</>}
+                          sx={{
+                            bgcolor: '#4caf50',
+                            color: 'white',
+                            fontWeight: 700,
+                            borderRadius: '8px',
+                            px: 2,
+                            py: 1,
+                            minWidth: '140px',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                            border: '1px solid rgba(76, 175, 80, 0.3)',
+                            '&:hover': { 
+                              bgcolor: '#43a047',
+                              boxShadow: `
+                                0 0 10px #4caf50,
+                                0 0 20px #4caf50,
+                                0 0 40px #4caf50,
+                                inset 0 0 10px rgba(76, 175, 80, 0.3)
+                              `,
+                              border: '1px solid rgba(76, 175, 80, 0.8)',
+                              textShadow: '0 0 10px rgba(255,255,255,0.8)',
+                              transform: 'translateY(-2px)'
+                            },
+                            '&:disabled': { opacity: 0.6 }
+                          }}
+                        >
+                          {generandoCorte === p._id ? '⌛ Registrando...' : 'Registrar Corte'}
+                        </Button>
+
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => handleGenerarPDF(p._id)}
+                          disabled={generandoPDF === p._id}
+                          startIcon={generandoPDF === p._id ? null : <>📄</>}
+                          sx={{
+                            borderColor: '#4f46de',
+                            color: '#b8a9ff',
+                            fontWeight: 700,
+                            borderRadius: '8px',
+                            px: 2,
+                            py: 1,
+                            minWidth: '140px',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                            '&:hover': { 
+                              bgcolor: 'rgba(79, 70, 222, 0.1)',
+                              borderColor: '#b8a9ff',
+                              boxShadow: `
+                                0 0 10px #4f46de,
+                                0 0 20px #4f46de,
+                                inset 0 0 10px rgba(79, 70, 222, 0.1)
+                              `,
+                              textShadow: '0 0 10px rgba(184, 169, 255, 0.8)',
+                              transform: 'translateY(-2px)'
+                            },
+                            '&:disabled': { opacity: 0.6 }
+                          }}
+                        >
+                          {generandoPDF === p._id ? '⌛ Generando...' : 'Generar PDF'}
+                        </Button>
+                      </Stack>
+                      
+                      <Typography sx={{ color: '#b8a9ff', fontSize: '13px', mt: 1, opacity: 0.8 }}>
+                        Primero registra un corte, luego genera el reporte PDF
+                      </Typography>
+                      
+                      <Typography sx={{ color: '#d0bfff', fontSize: '14px', mt: 0.5, opacity: 0.7 }}>
+                        {latest.lastCutDate 
+                          ? `Fecha del último corte: ${new Date(latest.lastCutDate).toLocaleDateString('es-ES', { 
+                              day: '2-digit', 
+                              month: '2-digit', 
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}`
+                          : 'Aún no se ha registrado ningún corte'
+                        }
+                      </Typography>
+                    </Box>
+
+                    <Box>
+                      <Typography sx={{ color:'#d0bfff', mb:1 }}>Consumibles</Typography>
+                      <Stack spacing={1}>
+                        {(latest.lastSupplies || []).map((s, idx) => {
+                          const pct = tonerPercent(s.level, s.max);
+                          return (
+                            <Box key={idx}>
+                              <Box sx={{ display:'flex', justifyContent:'space-between' }}>
+                                <Typography>{s.name || `Supply ${idx+1}`}</Typography>
+                                <Typography sx={{ color: pct<=20 ? '#ff9e9e' : '#9de6a2' }}>
+                                  {isFinite(pct) ? `${pct}%` : '—'}
+                                </Typography>
+                              </Box>
+                              <LinearProgress
+                                variant="determinate"
+                                value={isFinite(pct) ? pct : 0}
+                                sx={{
+                                  height: 8,
+                                  borderRadius: 6,
+                                  bgcolor: 'rgba(255,255,255,0.08)',
+                                  '& .MuiLinearProgress-bar': { transition: 'width .3s' }
+                                }}
+                              />
+                            </Box>
+                          );
+                        })}
+                        {(!latest.lastSupplies || latest.lastSupplies.length === 0) && (
+                          <Typography sx={{ color:'#b8a9ff' }}>Sin datos de tóner.</Typography>
+                        )}
+                      </Stack>
+                    </Box>
+                  </Box>
+                </>
+              );
+            })()}
+          </Box>
+        );
+      })}
+    </Stack>
+  )}
+</CardContent>
           </Card>
         )}
       </Box>
