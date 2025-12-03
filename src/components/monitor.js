@@ -150,6 +150,47 @@ const useFolderManager = () => {
     );
   };
 
+  const getImpresorasPorCarpeta = async (carpetaId) => {
+  try {
+    const { empresaId: empresaPadreId, ciudad } = getScope();
+    
+    // 1. Obtener todas las empresas de esta carpeta
+    const asignacionesRes = await fetch(`${API_BASE}/api/asignaciones?empresaPadreId=${empresaPadreId}&ciudad=${ciudad}`);
+    const asignacionesData = await asignacionesRes.json();
+    
+    if (!asignacionesData.ok) return [];
+    
+    // Filtrar empresas de esta carpeta
+    const empresaIdsEnCarpeta = Object.entries(asignacionesData.data)
+      .filter(([empresaId, carpetaAsignadaId]) => carpetaAsignadaId === carpetaId)
+      .map(([empresaId]) => empresaId);
+    
+    // 2. Obtener impresoras de todas esas empresas
+    const todasImpresoras = [];
+    
+    for (const empresaId of empresaIdsEnCarpeta) {
+      const res = await fetch(`${API_BASE}/api/empresas/${empresaId}/impresoras?ciudad=${ciudad}`);
+      const data = await res.json();
+      
+      if (data.ok && data.data) {
+        // Agregar información de la empresa a cada impresora
+        const impresorasConEmpresa = data.data.map(impresora => ({
+          ...impresora,
+          empresaNombre: empresaId // Aquí deberías buscar el nombre real de la empresa
+        }));
+        
+        todasImpresoras.push(...impresorasConEmpresa);
+      }
+    }
+    
+    return todasImpresoras;
+    
+  } catch (error) {
+    console.error('Error obteniendo impresoras por carpeta:', error);
+    return [];
+  }
+};
+
   const createFolder = async (name, parentId = null) => {
     try {
       const { empresaId, ciudad } = getScope();
@@ -311,122 +352,9 @@ const useFolderManager = () => {
   }
  };
 
-const loadPrinters = async (empresaIdParam) => {
-  setLoadingPrinters(true);
-  try {
-    const { ciudad } = getScope();
-    
-    // 🆕 SI ESTAMOS EN UNA CARPETA, CARGAR TODAS LAS IMPRESORAS DE ESA CARPETA
-    if (currentFolderId && currentFolderId !== 'all') {
-      console.log('📂 Cargando impresoras de la carpeta:', currentFolderId);
-      
-      // Usar la nueva función del hook
-      const impresorasCarpeta = await getImpresorasPorCarpeta(currentFolderId);
-      
-      if (impresorasCarpeta.length > 0) {
-        applyAndRemember(impresorasCarpeta);
-        return;
-      } else {
-        console.log('📂 La carpeta está vacía o no tiene empresas');
-        setPrinters([]);
-        return;
-      }
-    }
-    
-    // 🆕 SI ESTAMOS EN "TODAS LAS IMPRESORAS"
-    if (currentFolderId === 'all') {
-      console.log('🌐 Cargando TODAS las impresoras de todas las empresas');
-      
-      const todasImpresoras = [];
-      
-      for (const empresa of empresas) {
-        const q = ciudad ? `?ciudad=${encodeURIComponent(ciudad)}` : '';
-        const res = await fetch(`${API_BASE}/api/empresas/${empresa._id}/impresoras${q}`);
-        const data = await res.json();
-        
-        if (data.ok && data.data) {
-          const impresorasConEmpresa = data.data.map(impresora => ({
-            ...impresora,
-            empresaNombre: empresa.nombre,
-            empresaId: empresa._id
-          }));
-          
-          todasImpresoras.push(...impresorasConEmpresa);
-        }
-      }
-      
-      applyAndRemember(todasImpresoras);
-      return;
-    }
-    
-    // COMPORTAMIENTO ORIGINAL: Cargar impresoras de una sola empresa
-    console.log('🏢 Cargando impresoras de empresa específica:', empresaIdParam);
-    
-    const q = ciudad ? `?ciudad=${encodeURIComponent(ciudad)}` : '';
-    const res = await fetch(`${API_BASE}/api/empresas/${empresaIdParam}/impresoras${q}`);
-    const data = await res.json();
-    
-    if (!res.ok || !data?.ok) throw new Error(data?.error || 'No se pudieron cargar impresoras');
-    
-    // Agregar información de empresa
-    const empresa = empresas.find(e => e._id === empresaIdParam);
-    const impresorasConEmpresa = data.data.map(impresora => ({
-      ...impresora,
-      empresaNombre: empresa?.nombre || 'Desconocida',
-      empresaId: empresaIdParam
-    }));
-    
-    applyAndRemember(impresorasConEmpresa);
-    
-  } catch (e) {
-    console.error('Error al cargar impresoras:', e);
-    setPrinters([]);
-  } finally {
-    setLoadingPrinters(false);
-  }
-};
 
 // Función para obtener impresoras de una carpeta específica
-const getImpresorasPorCarpeta = async (carpetaId) => {
-  try {
-    const { empresaId: empresaPadreId, ciudad } = getScope();
-    
-    // 1. Obtener todas las empresas de esta carpeta
-    const asignacionesRes = await fetch(`${API_BASE}/api/asignaciones?empresaPadreId=${empresaPadreId}&ciudad=${ciudad}`);
-    const asignacionesData = await asignacionesRes.json();
-    
-    if (!asignacionesData.ok) return [];
-    
-    // Filtrar empresas de esta carpeta
-    const empresaIdsEnCarpeta = Object.entries(asignacionesData.data)
-      .filter(([empresaId, carpetaAsignadaId]) => carpetaAsignadaId === carpetaId)
-      .map(([empresaId]) => empresaId);
-    
-    // 2. Obtener impresoras de todas esas empresas
-    const todasImpresoras = [];
-    
-    for (const empresaId of empresaIdsEnCarpeta) {
-      const res = await fetch(`${API_BASE}/api/empresas/${empresaId}/impresoras?ciudad=${ciudad}`);
-      const data = await res.json();
-      
-      if (data.ok && data.data) {
-        // Agregar información de la empresa a cada impresora
-        const impresorasConEmpresa = data.data.map(impresora => ({
-          ...impresora,
-          empresaNombre: empresas.find(e => e._id === empresaId)?.nombre || empresaId
-        }));
-        
-        todasImpresoras.push(...impresorasConEmpresa);
-      }
-    }
-    
-    return todasImpresoras;
-    
-  } catch (error) {
-    console.error('Error obteniendo impresoras por carpeta:', error);
-    return [];
-  }
-};
+
 
 return {
     folders,
@@ -452,6 +380,7 @@ return {
     setRenameDialog,
     setDeleteDialog,
     loading,
+    getImpresorasPorCarpeta,
     reloadFolders: loadFolderData
   };
 
@@ -1091,7 +1020,7 @@ const loadPrinters = async (empresaIdParam) => {
     if (currentFolderId) {
       // Aquí podrías implementar un endpoint backend nuevo
       // Por ahora, cargar todas las impresoras de todas las empresas en la carpeta
-      const empresasEnCarpeta = getEmpresasInFolder(currentFolderId, empresas);
+      const empresasEnCarpeta = getImpresorasPorCarpeta(currentFolderId, empresas);
       const todasImpresoras = [];
       
       for (const empresa of empresasEnCarpeta) {
