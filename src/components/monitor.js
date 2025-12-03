@@ -1020,7 +1020,7 @@ const loadPrinters = async (empresaIdParam) => {
     if (currentFolderId) {
       // Aquí podrías implementar un endpoint backend nuevo
       // Por ahora, cargar todas las impresoras de todas las empresas en la carpeta
-      const empresasEnCarpeta = getImpresorasPorCarpeta(currentFolderId, empresas);
+      const empresasEnCarpeta = getEmpresasInFolder(currentFolderId, empresas);
       const todasImpresoras = [];
       
       for (const empresa of empresasEnCarpeta) {
