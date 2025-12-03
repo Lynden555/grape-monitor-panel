@@ -1016,11 +1016,13 @@ const loadPrinters = async (empresaIdParam) => {
   try {
     const { ciudad } = getScope();
     
-    // Si estamos en una carpeta, cargar TODAS las impresoras de esa carpeta
+    // 🆕 SI ESTAMOS EN UNA CARPETA, cargar TODAS las impresoras de esa carpeta
     if (currentFolderId) {
-      // Aquí podrías implementar un endpoint backend nuevo
-      // Por ahora, cargar todas las impresoras de todas las empresas en la carpeta
+      console.log('📂 Cargando impresoras de la carpeta:', currentFolderId);
+      
       const empresasEnCarpeta = getEmpresasInFolder(currentFolderId, empresas);
+      console.log('📂 Empresas en carpeta:', empresasEnCarpeta.length);
+      
       const todasImpresoras = [];
       
       for (const empresa of empresasEnCarpeta) {
@@ -1032,16 +1034,22 @@ const loadPrinters = async (empresaIdParam) => {
           const impresorasConEmpresa = data.data.map(impresora => ({
             ...impresora,
             empresaNombre: empresa.nombre,
-            empresaId: empresa._id
+            empresaId: empresa._id,
+            empresaColor: getColorForEmpresa(empresa._id) // 🆕 Color único por empresa
           }));
           
+          console.log(`📂 ${empresa.nombre}: ${data.data.length} impresoras`);
           todasImpresoras.push(...impresorasConEmpresa);
         }
       }
       
+      console.log('📂 Total impresoras en carpeta:', todasImpresoras.length);
       applyAndRemember(todasImpresoras);
-    } else {
-      // Comportamiento normal: cargar impresoras de una sola empresa
+    } 
+    // 🆕 SI TENEMOS UNA EMPRESA SELECCIONADA (fuera de carpeta)
+    else if (empresaIdParam) {
+      console.log('🏢 Cargando impresoras de empresa específica:', empresaIdParam);
+      
       const q = ciudad ? `?ciudad=${encodeURIComponent(ciudad)}` : '';
       const res = await fetch(`${API_BASE}/api/empresas/${empresaIdParam}/impresoras${q}`);
       const data = await res.json();
@@ -1053,10 +1061,16 @@ const loadPrinters = async (empresaIdParam) => {
       const impresorasConEmpresa = data.data.map(impresora => ({
         ...impresora,
         empresaNombre: empresa?.nombre || 'Desconocida',
-        empresaId: empresaIdParam
+        empresaId: empresaIdParam,
+        empresaColor: getColorForEmpresa(empresaIdParam)
       }));
       
       applyAndRemember(impresorasConEmpresa);
+    }
+    // 🆕 SI NO HAY NI CARPETA NI EMPRESA (lista vacía)
+    else {
+      console.log('📭 No hay empresa seleccionada ni carpeta activa');
+      setPrinters([]);
     }
   } catch (e) {
     console.error('Error al cargar impresoras:', e);
@@ -1122,13 +1136,21 @@ const loadPrinters = async (empresaIdParam) => {
     };
   }, [isAuthReady]);
 
-  const handleSelectEmpresa = async (emp) => {
-    setSelectedEmpresa(emp);
-    localStorage.setItem('selectedEmpresaId', emp._id);
-    setMode('empresa');
-    setExpandedPrinterId(null);
-    await loadPrinters(emp._id);
-  };
+const handleSelectEmpresa = async (emp) => {
+  // 🆕 Si estamos en una carpeta, NO cambiar a modo empresa individual
+  if (currentFolderId) {
+    console.log('⚠️ En carpeta, no se puede ver empresa individual');
+    setSuccessMsg(`En modo carpeta. Para ver "${emp.nombre}" individualmente, sal de la carpeta.`);
+    return;
+  }
+  
+  // Comportamiento normal (fuera de carpeta)
+  setSelectedEmpresa(emp);
+  localStorage.setItem('selectedEmpresaId', emp._id);
+  setMode('empresa');
+  setExpandedPrinterId(null);
+  await loadPrinters(emp._id);
+};
 
 const handleCrearEmpresa = async () => {
   try {
@@ -1154,13 +1176,25 @@ const handleCrearEmpresa = async () => {
     if (currentFolderId) {
       assignEmpresaToFolder(data.empresaId, currentFolderId);
       setSuccessMsg(`Empresa "${nombre.trim()}" creada dentro de la carpeta actual`);
+      
+      // 🆕 IMPORTANTE: Cuando creamos dentro de una carpeta, NO seleccionar la empresa
+      // Solo agregarla a la lista y actualizar las impresoras de la carpeta
+      setEmpresas(prev => [{ _id: data.empresaId, nombre: nueva.nombre, apiKey: data.apiKey }, ...prev]);
+      
+      // 🆕 Recargar las impresoras de la carpeta (no de una empresa específica)
+      await loadPrinters(null); // Pasar null para indicar "recargar carpeta"
+      
+      // 🆕 NO cambiar el modo ni seleccionar la empresa
+      // setSelectedEmpresa(null);
+      // setMode('list');
+    } else {
+      // Comportamiento original si NO estamos en carpeta
+      setEmpresas(prev => [{ _id: data.empresaId, nombre: nueva.nombre, apiKey: data.apiKey }, ...prev]);
+      setSelectedEmpresa({ _id: data.empresaId, nombre: nueva.nombre, apiKey: data.apiKey });
+      localStorage.setItem('selectedEmpresaId', data.empresaId);
+      setMode('empresa');
+      await loadPrinters(data.empresaId);
     }
-
-    setEmpresas(prev => [{ _id: data.empresaId, nombre: nueva.nombre, apiKey: data.apiKey }, ...prev]);
-    setSelectedEmpresa({ _id: data.empresaId, nombre: nueva.nombre, apiKey: data.apiKey });
-    localStorage.setItem('selectedEmpresaId', data.empresaId);
-    setMode('empresa');
-    await loadPrinters(data.empresaId);
   } catch (e) {
     setErrorMsg(e.message);
   } finally {
@@ -1256,6 +1290,19 @@ const empresasEnCarpetaActual = useMemo(() => {
     const p = Math.round((Number(lvl) / Number(max)) * 100);
     return Math.max(0, Math.min(100, p));
   };
+
+  // 🆕 Función para asignar colores únicos a cada empresa
+const getColorForEmpresa = (empresaId) => {
+  const colors = [
+    '#fe5953', '#4f46de', '#00c853', '#ffb74d', 
+    '#9c27b0', '#2196f3', '#ff9800', '#4caf50',
+    '#e91e63', '#3f51b5', '#ff5722', '#009688'
+  ];
+  
+  // Usar el ID de la empresa para seleccionar un color consistente
+  const index = empresas.findIndex(e => e._id === empresaId);
+  return colors[index % colors.length] || '#fe5953';
+};
 
   const handleLogout = () => {
     localStorage.removeItem('empresaId');
@@ -1811,10 +1858,26 @@ const empresasEnCarpetaActual = useMemo(() => {
     }}
   >
 
-    <PrintIcon sx={{ color:'#b8a9ff' }} />
-    <Typography sx={{ fontWeight:800 }}>
-      {p.printerName || p.sysName || p.host}
-    </Typography>
+<PrintIcon sx={{ color:'#b8a9ff' }} />
+<Typography sx={{ fontWeight:800, display: 'flex', alignItems: 'center' }}>
+  {p.printerName || p.sysName || p.host}
+  
+  {/* 🆕 MOSTRAR NOMBRE DE EMPRESA SI ESTAMOS EN CARPETA */}
+  {currentFolderId && p.empresaNombre && (
+    <Chip 
+      label={p.empresaNombre}
+      size="small"
+      sx={{ 
+        ml: 1,
+        bgcolor: p.empresaColor || '#4f46de',
+        color: 'white',
+        fontWeight: 600,
+        fontSize: '0.7rem',
+        height: '20px'
+      }}
+    />
+  )}
+</Typography>
 
 <Chip
   label={online ? 'Online' : 'Offline'}
