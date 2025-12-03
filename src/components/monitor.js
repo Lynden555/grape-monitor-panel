@@ -1135,21 +1135,28 @@ const loadPrinters = async (empresaIdParam) => {
   }, [isAuthReady]);
 
 const handleSelectEmpresa = async (emp) => {
+  // 🆕 Si emp es null o undefined, limpiar
+  if (!emp) {
+    setSelectedEmpresa(null);
+    setPrinters([]);
+    setMode('list');
+    return;
+  }
+  
   console.log('🔄 Seleccionando empresa:', emp.nombre, 'ID:', emp._id);
   
-  // 🆕 RESET COMPLETO antes de cargar nuevas impresoras
-  setPrinters([]); // Limpiar lista inmediatamente
-  setExpandedPrinterId(null); // Cerrar cualquier impresora expandida
-  setSelectedEmpresa(emp); // Establecer nueva empresa
+  // 🆕 Limpiar antes de cargar nuevas
+  setPrinters([]);
+  setExpandedPrinterId(null);
+  setSelectedEmpresa(emp);
+  setMode('empresa');
   
-  // 🆕 IMPORTANTE: NO usar localStorage para selectedEmpresaId en modo carpeta
+  // 🆕 Solo guardar en localStorage si NO estamos en carpeta
   if (!currentFolderId) {
     localStorage.setItem('selectedEmpresaId', emp._id);
   }
   
-  setMode('empresa');
-  
-  // 🆕 Forzar recarga limpia de impresoras
+  // Cargar impresoras
   try {
     await loadPrinters(emp._id);
   } catch (error) {
@@ -1273,16 +1280,28 @@ const handleCreateFolder = async () => {
 
   
 const handleSelectFolder = (folder) => {
-  setCurrentFolderId(folder._id); // Cambiar .id por ._id
+  setCurrentFolderId(folder._id);
+  // 🆕 LIMPIAR impresoras cuando entras a carpeta
+  setPrinters([]);
+  setSelectedEmpresa(null);
+  setMode('list');
 };
 
 const handleBackToRoot = () => {
   setCurrentFolderId(null);
+  // 🆕 LIMPIAR impresoras cuando sales de carpeta
+  setPrinters([]);
+  setSelectedEmpresa(null);
+  setMode('list');
 };
 
 // 🆕 FUNCIÓN PARA NAVEGAR A CUALQUIER CARPETA DEL BREADCRUMB
 const navigateToFolder = (folderId) => {
   setCurrentFolderId(folderId);
+  // 🆕 LIMPIAR impresoras cuando navegas entre carpetas
+  setPrinters([]);
+  setSelectedEmpresa(null);
+  setMode('list');
 };
 
 const empresasEnCarpetaActual = useMemo(() => {
@@ -1824,15 +1843,29 @@ const getColorForEmpresa = (empresaId) => {
               </Button>
             </Box>
 
-            <CardContent sx={{ p: 2 }}>
-              {loadingPrinters && <LinearProgress />}
+<CardContent sx={{ p: 2 }}>
+  {loadingPrinters && <LinearProgress />}
 
-              {!loadingPrinters && printers.length === 0 && (
-                <Typography sx={{ color: '#b8a9ff', p: 2 }}>
-                  Aún no hay impresoras reportadas por el Agente para esta empresa.
-                </Typography>
-              )}
-
+  {/* 🆕 MENSAJE CUANDO NO HAY EMPRESA SELECCIONADA */}
+  {!loadingPrinters && (!selectedEmpresa || printers.length === 0) && (
+    <Box sx={{ 
+      textAlign: 'center', 
+      py: 8,
+      color: '#b8a9ff'
+    }}>
+      <DevicesIcon sx={{ fontSize: 60, mb: 2, opacity: 0.5 }} />
+      <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>
+        {selectedEmpresa ? 'No hay impresoras' : 'Selecciona una empresa'}
+      </Typography>
+      <Typography sx={{ opacity: 0.8, maxWidth: 400, mx: 'auto' }}>
+        {selectedEmpresa 
+          ? 'Esta empresa aún no tiene impresoras configuradas. Configura el agente para comenzar el monitoreo.'
+          : 'Haz clic en una empresa del panel izquierdo para ver sus impresoras.'
+        }
+      </Typography>
+    </Box>
+  )}
+{!loadingPrinters && selectedEmpresa && printers.length > 0 && (
               <Stack spacing={1.5}>
                 {printers.map((p) => {
                   const latest = p.latest || {};
@@ -2089,6 +2122,7 @@ const getColorForEmpresa = (empresaId) => {
                   );
                 })}
               </Stack>
+              )}
             </CardContent>
           </Card>
         )}
