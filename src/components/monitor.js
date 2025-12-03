@@ -2143,101 +2143,89 @@ const getColorForEmpresa = (empresaId) => {
       overflow: 'hidden',
       height: '100%',
       display: 'flex',
-      alignItems: 'flex-start', // CAMBIADO: de 'center' a 'flex-start' para subir todo
+      alignItems: 'flex-start', // 👈 Esto lo sube
       justifyContent: 'center',
-      pt: 8, // NUEVO: padding top para bajar desde arriba (ajusta el número)
+      pt: 6, // 👈 Padding top para empezar más arriba
     }}
   >
     <CardContent sx={{ 
       textAlign: 'center', 
-      py: 12, // AUMENTADO: de 10 a 12 (más espacio vertical)
+      py: 8, // 👈 Reducido un poco (antes era 10)
       color: '#b8a9ff',
-      transform: 'translateY(-20px)', // NUEVO: sube todo el contenido
+      transform: 'translateY(-10px)', // 👈 Esto lo sube suavemente
     }}>
       <DevicesIcon sx={{ 
-        fontSize: 100, // AUMENTADO: de 80 a 100 (icono más grande)
-        mb: 4, // AUMENTADO: de 3 a 4 (más espacio debajo del icono)
+        fontSize: 85, // 👈 Un poquito más grande (antes 80)
+        mb: 3, 
         opacity: 0.3,
         color: '#fe5953'
       }} />
       
-      <Typography variant="h3" sx={{ // CAMBIADO: de 'h5' a 'h3' (texto más grande)
-        mb: 3, // AUMENTADO: de 2 a 3
-        fontWeight: 900, // AUMENTADO: de 800 a 900 (más negrita)
+      <Typography variant="h4" sx={{ // 👈 h4 en lugar de h5 (más grande que antes pero no exagerado)
+        mb: 2, 
+        fontWeight: 800,
         background: 'linear-gradient(90deg, #fe5953 0%, #4f46de 100%)',
         WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        fontSize: { xs: '2rem', md: '2.5rem' }, // NUEVO: responsive
-        letterSpacing: '0.5px', // NUEVO: más espacio entre letras
+        WebkitTextFillColor: 'transparent'
       }}>
         Selecciona una empresa
       </Typography>
       
       <Typography sx={{ 
-        opacity: 0.9, // AUMENTADO: de 0.8 a 0.9 (más visible)
-        maxWidth: 500, // AUMENTADO: de 400 a 500 (línea más larga)
+        opacity: 0.8, 
+        maxWidth: 400, 
         mx: 'auto',
-        mb: 5, // AUMENTADO: de 4 a 5
-        fontSize: '1.2rem', // AUMENTADO: de 1rem a 1.2rem
-        lineHeight: 1.6, // NUEVO: mejor interlineado
+        mb: 4,
+        fontSize: '1.05rem', // 👈 Un poquito más grande
       }}>
         Haz clic en una empresa del panel izquierdo para ver sus impresoras y comenzar el monitoreo.
       </Typography>
       
       <Divider sx={{ 
-        borderColor: 'rgba(79, 70, 222, 0.4)', // AUMENTADO opacidad
-        my: 4, // AUMENTADO: de 3 a 4
+        borderColor: 'rgba(79, 70, 222, 0.3)', 
+        my: 3,
         width: '80%',
-        mx: 'auto',
-        borderWidth: '1.5px', // NUEVO: línea más gruesa
+        mx: 'auto'
       }} />
       
       <Box sx={{ 
         display: 'flex', 
         justifyContent: 'center',
-        gap: 3, // AUMENTADO: de 2 a 3
+        gap: 2,
         flexWrap: 'wrap',
-        mt: 1, // NUEVO: margen top adicional
+        mt: 1, // 👈 Un poco de margen arriba para separar
       }}>
         <Chip 
-          icon={<AddCircleIcon sx={{ fontSize: '1.5rem' }} />} // NUEVO: icono más grande
+          icon={<AddCircleIcon />}
           label="Crear nueva empresa"
           onClick={() => setMode('create')}
           sx={{ 
-            bgcolor: 'rgba(79, 70, 222, 0.25)', // AUMENTADO opacidad
+            bgcolor: 'rgba(79, 70, 222, 0.2)',
             color: '#b8a9ff',
-            border: '2px solid #4f46de', // AUMENTADO: de 1px a 2px
+            border: '1px solid #4f46de',
             cursor: 'pointer',
-            fontSize: '1.1rem', // NUEVO: texto más grande
-            height: '48px', // NUEVO: más alto
-            padding: '12px 20px', // NUEVO: más padding
+            fontSize: '0.95rem', // 👈 Un poquito más grande
+            padding: '8px 16px',
             '&:hover': {
-              bgcolor: 'rgba(79, 70, 222, 0.4)',
-              transform: 'translateY(-3px)', // NUEVO: efecto hover más pronunciado
-              boxShadow: '0 5px 15px rgba(79, 70, 222, 0.3)',
-            },
-            transition: 'all 0.3s ease', // NUEVO: transición suave
+              bgcolor: 'rgba(79, 70, 222, 0.3)'
+            }
           }}
         />
         
         <Chip 
-          icon={<CreateNewFolderIcon sx={{ fontSize: '1.5rem' }} />} // NUEVO: icono más grande
+          icon={<CreateNewFolderIcon />}
           label="Crear carpeta"
           onClick={() => setFolderDialogOpen(true)}
           sx={{ 
-            bgcolor: 'rgba(254, 89, 83, 0.25)', // AUMENTADO opacidad
+            bgcolor: 'rgba(254, 89, 83, 0.2)',
             color: '#ffb74d',
-            border: '2px solid #fe5953', // AUMENTADO: de 1px a 2px
+            border: '1px solid #fe5953',
             cursor: 'pointer',
-            fontSize: '1.1rem', // NUEVO: texto más grande
-            height: '48px', // NUEVO: más alto
-            padding: '12px 20px', // NUEVO: más padding
+            fontSize: '0.95rem', // 👈 Un poquito más grande
+            padding: '8px 16px',
             '&:hover': {
-              bgcolor: 'rgba(254, 89, 83, 0.4)',
-              transform: 'translateY(-3px)', // NUEVO: efecto hover más pronunciado
-              boxShadow: '0 5px 15px rgba(254, 89, 83, 0.3)',
-            },
-            transition: 'all 0.3s ease', // NUEVO: transición suave
+              bgcolor: 'rgba(254, 89, 83, 0.3)'
+            }
           }}
         />
       </Box>
