@@ -1865,24 +1865,8 @@ const getColorForEmpresa = (empresaId) => {
   >
 
 <PrintIcon sx={{ color:'#b8a9ff' }} />
-<Typography sx={{ fontWeight:800, display: 'flex', alignItems: 'center' }}>
+<Typography sx={{ fontWeight:800 }}>
   {p.printerName || p.sysName || p.host}
-  
-  {/* 🆕 MOSTRAR NOMBRE DE EMPRESA SI ESTAMOS EN CARPETA */}
-  {currentFolderId && p.empresaNombre && (
-    <Chip 
-      label={p.empresaNombre}
-      size="small"
-      sx={{ 
-        ml: 1,
-        bgcolor: p.empresaColor || '#4f46de',
-        color: 'white',
-        fontWeight: 600,
-        fontSize: '0.7rem',
-        height: '20px'
-      }}
-    />
-  )}
 </Typography>
 
 <Chip
