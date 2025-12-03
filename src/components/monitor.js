@@ -881,6 +881,18 @@ const handleFolderDrop = (e, folderId) => {
     return age <= STALE_MS;
   };
 
+  // Agrega esta función cerca de isOnlineUI (~línea 670)
+const computeDerivedOnline = (latest, now = Date.now()) => {
+  if (!latest || !latest.lastSeenAt) return false;
+  if (latest.online === false) return false;
+  
+  const lastSeen = new Date(latest.lastSeenAt).getTime();
+  const age = now - lastSeen;
+  const STALE_MS = 2 * 60 * 1000; // 2 minutos
+  
+  return age <= STALE_MS;
+};
+
   const getScope = () => ({
     empresaId: localStorage.getItem('empresaId') || '',
     ciudad:    localStorage.getItem('ciudad')    || '',
@@ -1013,68 +1025,54 @@ const handleFolderDrop = (e, folderId) => {
 
 const loadPrinters = async (empresaIdParam) => {
   setLoadingPrinters(true);
+  
+  // 🆕 RESET DE CACHE antes de cargar
+  lastSeenRef.current = new Map();
+  holdUntilRef.current = new Map();
+  
   try {
     const { ciudad } = getScope();
+    console.log('🔄 Cargando impresoras para empresa:', empresaIdParam);
     
-    // 🆕 SI ESTAMOS EN UNA CARPETA, cargar TODAS las impresoras de esa carpeta
-    if (currentFolderId) {
-      console.log('📂 Cargando impresoras de la carpeta:', currentFolderId);
-      
-      const empresasEnCarpeta = getEmpresasInFolder(currentFolderId, empresas);
-      console.log('📂 Empresas en carpeta:', empresasEnCarpeta.length);
-      
-      const todasImpresoras = [];
-      
-      for (const empresa of empresasEnCarpeta) {
-        const q = ciudad ? `?ciudad=${encodeURIComponent(ciudad)}` : '';
-        const res = await fetch(`${API_BASE}/api/empresas/${empresa._id}/impresoras${q}`);
-        const data = await res.json();
-        
-        if (data.ok && data.data) {
-          const impresorasConEmpresa = data.data.map(impresora => ({
-            ...impresora,
-            empresaNombre: empresa.nombre,
-            empresaId: empresa._id,
-            empresaColor: getColorForEmpresa(empresa._id) // 🆕 Color único por empresa
-          }));
-          
-          console.log(`📂 ${empresa.nombre}: ${data.data.length} impresoras`);
-          todasImpresoras.push(...impresorasConEmpresa);
-        }
-      }
-      
-      console.log('📂 Total impresoras en carpeta:', todasImpresoras.length);
-      applyAndRemember(todasImpresoras);
-    } 
-    // 🆕 SI TENEMOS UNA EMPRESA SELECCIONADA (fuera de carpeta)
-    else if (empresaIdParam) {
-      console.log('🏢 Cargando impresoras de empresa específica:', empresaIdParam);
-      
-      const q = ciudad ? `?ciudad=${encodeURIComponent(ciudad)}` : '';
-      const res = await fetch(`${API_BASE}/api/empresas/${empresaIdParam}/impresoras${q}`);
-      const data = await res.json();
-      
-      if (!res.ok || !data?.ok) throw new Error(data?.error || 'No se pudieron cargar impresoras');
-      
-      // Agregar información de empresa
-      const empresa = empresas.find(e => e._id === empresaIdParam);
-      const impresorasConEmpresa = data.data.map(impresora => ({
-        ...impresora,
-        empresaNombre: empresa?.nombre || 'Desconocida',
-        empresaId: empresaIdParam,
-        empresaColor: getColorForEmpresa(empresaIdParam)
-      }));
-      
-      applyAndRemember(impresorasConEmpresa);
+    // 🆕 SIEMPRE cargar de la empresa específica, ignore si estamos en carpeta
+    const q = ciudad ? `?ciudad=${encodeURIComponent(ciudad)}` : '';
+    const res = await fetch(`${API_BASE}/api/empresas/${empresaIdParam}/impresoras${q}`);
+    const data = await res.json();
+    
+    if (!res.ok || !data?.ok) {
+      throw new Error(data?.error || 'No se pudieron cargar impresoras');
     }
-    // 🆕 SI NO HAY NI CARPETA NI EMPRESA (lista vacía)
-    else {
-      console.log('📭 No hay empresa seleccionada ni carpeta activa');
-      setPrinters([]);
-    }
+    
+    console.log('✅ Impresoras recibidas:', data.data?.length || 0);
+    
+    // 🆕 AGREGAR información de la empresa actual
+    const empresaActual = empresas.find(e => e._id === empresaIdParam);
+    const impresorasConInfo = (data.data || []).map(impresora => ({
+      ...impresora,
+      empresaNombre: empresaActual?.nombre || 'Empresa',
+      empresaId: empresaIdParam,
+      // 🆕 MARCA TEMPORAL para evitar cache
+      _timestamp: Date.now()
+    }));
+    
+    // 🆕 APLICAR NUEVO sin cache
+    const now = Date.now();
+    const nuevasImpresoras = impresorasConInfo.map(p => {
+      const latest = p.latest || {};
+      return {
+        ...p,
+        _lastSeenAt: latest.lastSeenAt || null,
+        _holdUntil: now + (2 * 60 * 1000) + (60 * 1000), // Reset hold
+        online: computeDerivedOnline(latest, now) // Función que ya tienes
+      };
+    });
+    
+    setPrinters(nuevasImpresoras);
+    
   } catch (e) {
-    console.error('Error al cargar impresoras:', e);
+    console.error('❌ Error al cargar impresoras:', e);
     setPrinters([]);
+    setErrorMsg(`Error: ${e.message}`);
   } finally {
     setLoadingPrinters(false);
   }
@@ -1137,19 +1135,27 @@ const loadPrinters = async (empresaIdParam) => {
   }, [isAuthReady]);
 
 const handleSelectEmpresa = async (emp) => {
-  // 🆕 Si estamos en una carpeta, NO cambiar a modo empresa individual
-  if (currentFolderId) {
-    console.log('⚠️ En carpeta, no se puede ver empresa individual');
-    setSuccessMsg(`En modo carpeta. Para ver "${emp.nombre}" individualmente, sal de la carpeta.`);
-    return;
+  console.log('🔄 Seleccionando empresa:', emp.nombre, 'ID:', emp._id);
+  
+  // 🆕 RESET COMPLETO antes de cargar nuevas impresoras
+  setPrinters([]); // Limpiar lista inmediatamente
+  setExpandedPrinterId(null); // Cerrar cualquier impresora expandida
+  setSelectedEmpresa(emp); // Establecer nueva empresa
+  
+  // 🆕 IMPORTANTE: NO usar localStorage para selectedEmpresaId en modo carpeta
+  if (!currentFolderId) {
+    localStorage.setItem('selectedEmpresaId', emp._id);
   }
   
-  // Comportamiento normal (fuera de carpeta)
-  setSelectedEmpresa(emp);
-  localStorage.setItem('selectedEmpresaId', emp._id);
   setMode('empresa');
-  setExpandedPrinterId(null);
-  await loadPrinters(emp._id);
+  
+  // 🆕 Forzar recarga limpia de impresoras
+  try {
+    await loadPrinters(emp._id);
+  } catch (error) {
+    console.error('Error al cargar impresoras:', error);
+    setPrinters([]);
+  }
 };
 
 const handleCrearEmpresa = async () => {
