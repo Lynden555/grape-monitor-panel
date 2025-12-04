@@ -18,6 +18,8 @@ import FolderIcon from '@mui/icons-material/Folder';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import printerIcon from './images/printer.png';
+import homeIcon from './images/home.png';
 
 const API_BASE = 'https://grape-monitor-production.up.railway.app';
 
@@ -433,11 +435,20 @@ return {
         height: '65px'
       }}
     >
-<PrintIcon sx={{ 
-  color: isSelected ? '#fe5953' : '#ff9e80', 
-  mr: 2,
-  fontSize: '28px'
-}} />
+<Box
+  component="img"
+  src={printerIcon}
+  alt="Impresora"
+  sx={{
+    width: '28px',
+    height: '28px',
+    mr: 2,
+    filter: isSelected 
+      ? 'brightness(1.2) saturate(1.5)' 
+      : 'brightness(0.9) saturate(0.8)',
+    opacity: isSelected ? 1 : 0.9,
+  }}
+/>
       
       <ListItemText
         primary={
@@ -1493,25 +1504,37 @@ const getColorForEmpresa = (empresaId) => {
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
       {/* Botón para ir al inicio */}
       <Button
-        onClick={handleBackToRoot}
-        size="small"
-        sx={{
-          color: '#b8a9ff',
-          fontWeight: 600,
-          textTransform: 'none',
-          borderRadius: '6px',
-          border: '1px solid rgba(184, 169, 255, 0.3)',
-          bgcolor: 'rgba(184, 169, 255, 0.1)',
-          minWidth: 'auto',
-          px: 1,
-          '&:hover': {
-            bgcolor: 'rgba(184, 169, 255, 0.2)',
-            border: '1px solid rgba(184, 169, 255, 0.6)'
-          }
-        }}
-      >
-        🏠
-      </Button>
+  onClick={handleBackToRoot}
+  size="small"
+  sx={{
+    color: '#b8a9ff',
+    fontWeight: 600,
+    textTransform: 'none',
+    borderRadius: '6px',
+    border: '1px solid rgba(184, 169, 255, 0.3)',
+    bgcolor: 'rgba(184, 169, 255, 0.1)',
+    minWidth: 'auto',
+    px: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    '&:hover': {
+      bgcolor: 'rgba(184, 169, 255, 0.2)',
+      border: '1px solid rgba(184, 169, 255, 0.6)'
+    }
+  }}
+>
+  <Box
+    component="img"
+    src={homeIcon}
+    alt="Inicio"
+    sx={{
+      width: '18px',
+      height: '18px',
+      filter: 'brightness(1.2) saturate(1.2)',
+    }}
+  />
+</Button>
 
       {/* Breadcrumb con las carpetas */}
       {getFolderPath(currentFolderId).map((folder, index) => (
