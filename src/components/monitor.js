@@ -2142,13 +2142,13 @@ const getColorForEmpresa = (empresaId) => {
       alignItems: 'flex-start', 
       justifyContent: 'center',
       // 🎯 AJUSTE 2: Un poco de padding top para no pegarse al borde
-      pt: 4,
+      pt: 8,
     }}
   >
     <CardContent sx={{ 
       textAlign: 'center', 
       // 🎯 AJUSTE 3: Menos padding vertical total
-      py: 6,
+      py: 10,
       color: '#b8a9ff',
       // 🎯 AJUSTE 4: Mover hacia arriba suavemente
       transform: 'translateY(20px)',
