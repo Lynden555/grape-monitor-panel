@@ -20,6 +20,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import printerIcon from './images/printer.png';
 import homeIcon from './images/home.png';
+import lockIcon from './images/lock.png';
 
 const API_BASE = 'https://grape-monitor-production.up.railway.app';
 
@@ -1370,29 +1371,48 @@ const getColorForEmpresa = (empresaId) => {
         }}
       >
         <Box sx={{ p: 2, borderBottom: '1px solid rgba(255, 107, 107, 0.3)' }}>
-          <Button
-            fullWidth
-            onClick={() => {
-              if (window.confirm('¿Estás seguro de que quieres cerrar sesión?\n\nSe te redirigirá al login.')) {
-                handleLogout();
-              }
-            }}
-            sx={{
-              color: '#ff6b6b',
-              fontWeight: 700,
-              textTransform: 'none',
-              borderRadius: '12px',
-              border: '2px solid #ff6b6b',
-              bgcolor: 'rgba(255, 107, 107, 0.1)',
-              '&:hover': {
-                bgcolor: 'rgba(255, 107, 107, 0.2)',
-                border: '2px solid #ff5252',
-                boxShadow: '0 0 15px rgba(255, 107, 107, 0.4)'
-              }
-            }}
-          >
-            🔓 Cerrar Sesión
-          </Button>
+<Button
+  fullWidth
+  onClick={() => {
+    if (window.confirm('¿Estás seguro de que quieres cerrar sesión?\n\nSe te redirigirá al login.')) {
+      handleLogout();
+    }
+  }}
+  sx={{
+    color: '#ff6b6b',
+    fontWeight: 700,
+    textTransform: 'none',
+    borderRadius: '12px',
+    border: '2px solid #ff6b6b',
+    bgcolor: 'rgba(255, 107, 107, 0.1)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 1,
+    '&:hover': {
+      bgcolor: 'rgba(255, 107, 107, 0.2)',
+      border: '2px solid #ff5252',
+      boxShadow: '0 0 15px rgba(255, 107, 107, 0.4)',
+      '& img': { // 🎯 Efecto hover específico para la imagen
+        transform: 'scale(1.1)',
+        filter: 'brightness(1.5) saturate(1.5)'
+      }
+    }
+  }}
+>
+  <Box
+    component="img"
+    src={lockIcon}
+    alt="Candado"
+    sx={{
+      width: '20px',
+      height: '20px',
+      filter: 'brightness(1.2) saturate(1.2)',
+      transition: 'all 0.3s ease', // Transición suave
+    }}
+  />
+  Cerrar Sesión
+</Button>
         </Box>
 
         <Divider sx={{ borderColor: 'rgba(255, 107, 107, 0.3)', mx: 2 }} />
