@@ -603,9 +603,52 @@ export default function Login() {
 
             <motion.div variants={itemVariants}>
               <Box sx={{ mt: 3, textAlign: 'center' }}>
-                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)' }}>
-                  ¿Primera vez? Contacta al administrador para crear tu cuenta
+                <Typography variant="body2" sx={{ 
+                  color: 'rgba(255,255,255,0.7)',
+                  mb: 2 
+                }}>
+                  ¿No tienes cuenta?
                 </Typography>
+                
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={() => window.location.href = '/registro'}
+                  sx={{
+                    py: 1.2,
+                    borderRadius: '12px',
+                    borderColor: 'rgba(255,255,255,0.3)',
+                    color: 'white',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    mb: 1.5,
+                    '&:hover': {
+                      borderColor: 'rgba(255,255,255,0.5)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                    }
+                  }}
+                >
+                  Registrarme Gratis (7 días de Trial)
+                </Button>
+                
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={() => window.location.href = '/planes'}
+                  sx={{
+                    py: 1.2,
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #00C853 0%, #64DD17 100%)',
+                    color: 'white',
+                    fontWeight: 700,
+                    boxShadow: '0 4px 20px rgba(100, 221, 23, 0.3)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #64DD17 0%, #00C853 100%)',
+                      boxShadow: '0 6px 25px rgba(100, 221, 23, 0.5)',
+                    }
+                  }}
+                >
+                  Ver Planes de Pago
+                </Button>
               </Box>
             </motion.div>
           </Card>
