@@ -2138,25 +2138,30 @@ const getColorForEmpresa = (empresaId) => {
       overflow: 'hidden',
       height: '100%',
       display: 'flex',
-      alignItems: 'center', // 👈 VOLVEMOS A 'center' (antes era 'flex-start')
+      // 🎯 AJUSTE CLAVE: Usamos 'flex-start' para empezar arriba
+      alignItems: 'flex-start', 
       justifyContent: 'center',
-      // 👈 QUITAMOS el pt: 6 que subía todo
+      // 🎯 AJUSTE 2: Un poco de padding top para no pegarse al borde
+      pt: 4,
     }}
   >
     <CardContent sx={{ 
       textAlign: 'center', 
-      py: 10, // 👈 Devolvemos a 10 (antes 8)
+      // 🎯 AJUSTE 3: Menos padding vertical total
+      py: 6,
       color: '#b8a9ff',
-      // 👈 QUITAMOS el transform: 'translateY(-10px)' que subía
+      // 🎯 AJUSTE 4: Mover hacia arriba suavemente
+      transform: 'translateY(20px)',
+      width: '100%',
     }}>
       <DevicesIcon sx={{ 
-        fontSize: 85, // 👈 Mantenemos 85 (antes 80)
+        fontSize: 85,
         mb: 3, 
         opacity: 0.3,
         color: '#fe5953'
       }} />
       
-      <Typography variant="h4" sx={{ // 👈 Mantenemos h4 (antes h5)
+      <Typography variant="h4" sx={{
         mb: 2, 
         fontWeight: 800,
         background: 'linear-gradient(90deg, #fe5953 0%, #4f46de 100%)',
@@ -2171,7 +2176,7 @@ const getColorForEmpresa = (empresaId) => {
         maxWidth: 400, 
         mx: 'auto',
         mb: 4,
-        fontSize: '1.05rem', // 👈 Mantenemos 1.05rem (antes 1rem)
+        fontSize: '1.05rem',
       }}>
         Haz clic en una empresa del panel izquierdo para ver sus impresoras y comenzar el monitoreo.
       </Typography>
@@ -2188,7 +2193,8 @@ const getColorForEmpresa = (empresaId) => {
         justifyContent: 'center',
         gap: 2,
         flexWrap: 'wrap',
-        // 👈 QUITAMOS el mt: 1
+        // 🎯 AJUSTE 5: Un poco más de margen arriba de los chips
+        mt: 2,
       }}>
         <Chip 
           icon={<AddCircleIcon />}
@@ -2199,7 +2205,7 @@ const getColorForEmpresa = (empresaId) => {
             color: '#b8a9ff',
             border: '1px solid #4f46de',
             cursor: 'pointer',
-            fontSize: '0.95rem', // 👈 Mantenemos 0.95rem
+            fontSize: '0.95rem',
             padding: '8px 16px',
             '&:hover': {
               bgcolor: 'rgba(79, 70, 222, 0.3)'
@@ -2216,7 +2222,7 @@ const getColorForEmpresa = (empresaId) => {
             color: '#ffb74d',
             border: '1px solid #fe5953',
             cursor: 'pointer',
-            fontSize: '0.95rem', // 👈 Mantenemos 0.95rem
+            fontSize: '0.95rem',
             padding: '8px 16px',
             '&:hover': {
               bgcolor: 'rgba(254, 89, 83, 0.3)'
