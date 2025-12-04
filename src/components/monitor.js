@@ -989,39 +989,34 @@ const computeDerivedOnline = (latest, now = Date.now()) => {
     }
   };
 
-  const loadEmpresas = async () => {
-    setLoadingEmpresas(true);
-    try {
-      const { empresaId, ciudad } = getScope();
-      const qs = new URLSearchParams({ empresaId, ciudad }).toString();
-      const res = await fetch(`${API_BASE}/api/empresas?${qs}`);
-      const data = await res.json();
-      if (!res.ok || !data?.ok) throw new Error(data?.error || 'No se pudieron cargar empresas');
+const loadEmpresas = async () => {
+  setLoadingEmpresas(true);
+  try {
+    const { empresaId, ciudad } = getScope();
+    const qs = new URLSearchParams({ empresaId, ciudad }).toString();
+    const res = await fetch(`${API_BASE}/api/empresas?${qs}`);
+    const data = await res.json();
+    if (!res.ok || !data?.ok) throw new Error(data?.error || 'No se pudieron cargar empresas');
 
-      const lista = data.data || [];
-      setEmpresas(lista);
+    const lista = data.data || [];
+    setEmpresas(lista);
 
-      const storedId = localStorage.getItem('selectedEmpresaId');
-      let toSelect = storedId ? lista.find(e => String(e._id) === String(storedId)) || null : null;
-      if (!toSelect && lista.length === 1) toSelect = lista[0];
-
-      if (toSelect) {
-        setSelectedEmpresa(toSelect);
-        setMode('empresa');
-        setExpandedPrinterId(null);
-        await loadPrinters(toSelect._id);
-      } else {
-        setSelectedEmpresa(null);
-        setMode('list');
-        setPrinters([]);
-      }
-    } catch (e) {
-      console.error(e);
-      setEmpresas([]); setSelectedEmpresa(null); setPrinters([]);
-    } finally {
-      setLoadingEmpresas(false);
-    }
-  };
+    // 🆕 CAMBIO AQUÍ: SIEMPRE iniciar en modo "list" sin empresa seleccionada
+    // Limpiamos cualquier empresa seleccionada previamente
+    setSelectedEmpresa(null);
+    setMode('list');
+    setPrinters([]);
+    
+    // 🆕 OPCIONAL: Si quieres limpiar el localStorage también
+    localStorage.removeItem('selectedEmpresaId');
+    
+  } catch (e) {
+    console.error(e);
+    setEmpresas([]); setSelectedEmpresa(null); setPrinters([]);
+  } finally {
+    setLoadingEmpresas(false);
+  }
+};
 
 const loadPrinters = async (empresaIdParam) => {
   setLoadingPrinters(true);
@@ -2143,25 +2138,25 @@ const getColorForEmpresa = (empresaId) => {
       overflow: 'hidden',
       height: '100%',
       display: 'flex',
-      alignItems: 'flex-start', // 👈 Esto lo sube
+      alignItems: 'center', // 👈 VOLVEMOS A 'center' (antes era 'flex-start')
       justifyContent: 'center',
-      pt: 6, // 👈 Padding top para empezar más arriba
+      // 👈 QUITAMOS el pt: 6 que subía todo
     }}
   >
     <CardContent sx={{ 
       textAlign: 'center', 
-      py: 8, // 👈 Reducido un poco (antes era 10)
+      py: 10, // 👈 Devolvemos a 10 (antes 8)
       color: '#b8a9ff',
-      transform: 'translateY(-10px)', // 👈 Esto lo sube suavemente
+      // 👈 QUITAMOS el transform: 'translateY(-10px)' que subía
     }}>
       <DevicesIcon sx={{ 
-        fontSize: 85, // 👈 Un poquito más grande (antes 80)
+        fontSize: 85, // 👈 Mantenemos 85 (antes 80)
         mb: 3, 
         opacity: 0.3,
         color: '#fe5953'
       }} />
       
-      <Typography variant="h4" sx={{ // 👈 h4 en lugar de h5 (más grande que antes pero no exagerado)
+      <Typography variant="h4" sx={{ // 👈 Mantenemos h4 (antes h5)
         mb: 2, 
         fontWeight: 800,
         background: 'linear-gradient(90deg, #fe5953 0%, #4f46de 100%)',
@@ -2176,7 +2171,7 @@ const getColorForEmpresa = (empresaId) => {
         maxWidth: 400, 
         mx: 'auto',
         mb: 4,
-        fontSize: '1.05rem', // 👈 Un poquito más grande
+        fontSize: '1.05rem', // 👈 Mantenemos 1.05rem (antes 1rem)
       }}>
         Haz clic en una empresa del panel izquierdo para ver sus impresoras y comenzar el monitoreo.
       </Typography>
@@ -2193,7 +2188,7 @@ const getColorForEmpresa = (empresaId) => {
         justifyContent: 'center',
         gap: 2,
         flexWrap: 'wrap',
-        mt: 1, // 👈 Un poco de margen arriba para separar
+        // 👈 QUITAMOS el mt: 1
       }}>
         <Chip 
           icon={<AddCircleIcon />}
@@ -2204,7 +2199,7 @@ const getColorForEmpresa = (empresaId) => {
             color: '#b8a9ff',
             border: '1px solid #4f46de',
             cursor: 'pointer',
-            fontSize: '0.95rem', // 👈 Un poquito más grande
+            fontSize: '0.95rem', // 👈 Mantenemos 0.95rem
             padding: '8px 16px',
             '&:hover': {
               bgcolor: 'rgba(79, 70, 222, 0.3)'
@@ -2221,7 +2216,7 @@ const getColorForEmpresa = (empresaId) => {
             color: '#ffb74d',
             border: '1px solid #fe5953',
             cursor: 'pointer',
-            fontSize: '0.95rem', // 👈 Un poquito más grande
+            fontSize: '0.95rem', // 👈 Mantenemos 0.95rem
             padding: '8px 16px',
             '&:hover': {
               bgcolor: 'rgba(254, 89, 83, 0.3)'
@@ -2232,7 +2227,6 @@ const getColorForEmpresa = (empresaId) => {
     </CardContent>
   </Card>
 )}
-
 
       </Box>
 
