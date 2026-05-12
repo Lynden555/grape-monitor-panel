@@ -22,6 +22,7 @@ import printerIcon from './images/printer.png';
 import homeIcon from './images/home.png';
 import lockIcon from './images/lock.png';
 
+
 const API_BASE = 'https://grape-monitor-production.up.railway.app';
 
 const generateId = () => `folder_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -517,6 +518,109 @@ export default function EmpresasPanel() {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [downloadAgentOpen, setDownloadAgentOpen] = useState(false);
+  const [licenciaInfo, setLicenciaInfo] = useState(null); // 🆕 NUEVO ESTADO
+
+
+
+  // 🆕 FUNCIÓN DE VERIFICACIÓN DE LICENCIA (DENTRO DEL COMPONENTE)
+  const verificarLicencia = async () => {
+    try {
+      const empresaId = localStorage.getItem('empresaId');
+      const ciudad = localStorage.getItem('ciudad');
+      const email = localStorage.getItem('userEmail');
+      
+      // Si no hay credenciales, ir al login
+      if (!empresaId || !ciudad || !email) {
+        console.log('❌ No hay credenciales, redirigiendo a login');
+        window.location.href = '/login';
+        return false;
+      }
+      
+      const response = await fetch(
+        `https://grape-monitor-production.up.railway.app/api/verificar-licencia/${empresaId}?ciudad=${ciudad}`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Error al verificar licencia');
+      }
+      
+      const licenciaData = await response.json();
+      
+      // SI NO PUEDE ACCEDER → REDIRIGIR
+      if (!licenciaData.puedeAcceder) {
+        let mensaje = '';
+        let url = '/planes';
+        
+        if (licenciaData.datosLicencia.tipo === 'trial_expirado') {
+          mensaje = `⏰ Tu trial expiró. Actualiza tu plan para continuar usando Grape Monitor.`;
+          url = '/planes?expirado=true';
+        } 
+        else if (licenciaData.datosLicencia.tipo === 'pendiente_pago') {
+          mensaje = `💳 Tu plan ${licenciaData.usuario.plan.toUpperCase()} está pendiente de pago.`;
+          url = `/planes?pendiente_pago=true&plan=${licenciaData.usuario.plan}`;
+        }
+        else {
+          mensaje = '🚫 Tu licencia no es válida. Contacta a soporte.';
+        }
+        
+        // Mostrar alerta y redirigir
+        alert(mensaje);
+        window.location.href = url;
+        return false;
+      }
+      
+      // SI PUEDE ACCEDER Y ES TRIAL → MOSTRAR INFO EN CONSOLA
+      if (licenciaData.datosLicencia.tipo === 'trial' && licenciaData.datosLicencia.diasRestantes <= 3) {
+        console.log(`⚠️ Trial cerca de expirar: ${licenciaData.datosLicencia.diasRestantes} días restantes`);
+      }
+      
+      console.log('✅ Licencia válida, plan:', licenciaData.usuario.plan);
+      
+      // GUARDAR INFO DE LICENCIA EN ESTADO
+      setLicenciaInfo(licenciaData.datosLicencia);
+      
+      return true;
+      
+    } catch (error) {
+      console.error('❌ Error verificando licencia:', error);
+      // Si hay error, dejamos continuar (no bloqueamos por error técnico)
+      return true;
+    }
+  };
+  
+  // 🆕 VERIFICACIÓN PERIÓDICA DE LICENCIA
+  useEffect(() => {
+    const verificarYProteger = async () => {
+      // Verificar licencia al cargar
+      await verificarLicencia();
+      
+      // Verificar cada 5 minutos (300000 ms) por si expira mientras usa
+      const intervalo = setInterval(verificarLicencia, 5 * 60 * 1000);
+      
+      // Limpiar intervalo al desmontar
+      return () => clearInterval(intervalo);
+    };
+    
+    verificarYProteger();
+  }, []);
+
+
+    // 🆕 VERIFICACIÓN DE LICENCIA
+  useEffect(() => {
+    const verificarYProteger = async () => {
+      
+      // Verificar licencia al cargar
+      await verificarLicencia();
+      
+      // Verificar cada 5 minutos (300000 ms) por si expira mientras usa
+      const intervalo = setInterval(verificarLicencia, 5 * 60 * 1000);
+      
+      // Limpiar intervalo al desmontar
+      return () => clearInterval(intervalo);
+    };
+    
+    verificarYProteger();
+  }, []); // <-- Array vacío para que solo se ejecute una vez al montar
 
   // 🆕 ESTADOS PARA MENÚ DE IMPRESORAS
   const [printerContextMenu, setPrinterContextMenu] = useState({

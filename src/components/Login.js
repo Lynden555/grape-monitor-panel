@@ -1,67 +1,157 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import loginGif from './images/login.gif';
 import grapeLogo from './images/grape.png';
-import { 
-  Box, 
-  TextField, 
-  Button, 
-  Card, 
-  Typography, 
-  Alert,
-  InputAdornment,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel
-} from '@mui/material';
-import { 
-  Email, 
-  Lock, 
-  LocationOn, 
-  Visibility, 
-  VisibilityOff,
-  Business
-} from '@mui/icons-material';
 
 const API_BASE = 'https://grape-monitor-production.up.railway.app';
 
-const FloatingShape = ({ delay, size, color, top, left, right, bottom }) => (
+/* ── wavy divider SVG: black spilling into white ── */
+const WavyDivider = () => (
+  <div style={{
+    position: 'absolute', top: -40, bottom: 0, left: 'calc(50% - 200px)',
+    width: 300,  zIndex: 2, pointerEvents: 'none',
+  }}>
+    <svg
+      viewBox="0 0 200 1000"
+      preserveAspectRatio="none"
+      style={{ width: '100%', height: '100%' }}
+    >
+      <path
+        d="M0,0 L20,0 
+C110,60 160,130 130,220 
+           C70,320 170,380 140,480 
+           C80,580 175,640 135,740 
+           C85,840 165,900 120,1000
+           L60,1000 L0,1000 Z"
+        fill="#0a0a0a"
+      />
+    </svg>
+  </div>
+);
+
+/* ── floating bubble circles ── */
+const Bubble = ({ size, top, left, delay, opacity = 0.06, color = 'rgba(139,92,246,' }) => (
   <motion.div
     style={{
-      position: 'absolute',
-      width: size,
-      height: size,
-      background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
-      borderRadius: '50%',
-      top,
-      left,
-      right,
-      bottom,
-      filter: 'blur(40px)',
-      opacity: 0.3
+      position: 'absolute', width: size, height: size, borderRadius: '50%',
+      background: `radial-gradient(circle, ${color}${opacity}) 0%, transparent 70%)`,
+      top, left, pointerEvents: 'none',
     }}
-    animate={{
-      y: [0, -20, 0],
-      x: [0, 10, 0],
-      scale: [1, 1.1, 1]
-    }}
-    transition={{
-      duration: 8,
-      delay,
-      repeat: Infinity,
-      ease: "easeInOut"
-    }}
+    animate={{ y: [0, -15, 0], scale: [1, 1.08, 1] }}
+    transition={{ duration: 7, delay, repeat: Infinity, ease: 'easeInOut' }}
   />
 );
 
+/* ── reusable input (dark text on white bg) ── */
+const InputField = ({ icon, label, type = 'text', value, onChange, endIcon }) => {
+  const [focused, setFocused] = useState(false);
+  return (
+    <div style={{ marginBottom: 22 }}>
+      <label style={{
+        display: 'block', fontSize: 12, fontWeight: 500, letterSpacing: '0.08em',
+        textTransform: 'uppercase', color: '#999', marginBottom: 8,
+      }}>
+        {label}
+      </label>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        background: focused ? '#f8f8f8' : '#f3f3f3',
+        border: `1.5px solid ${focused ? '#8b5cf6' : '#e8e8e8'}`,
+        borderRadius: 12, padding: '0 16px', transition: 'all 0.3s ease',
+      }}>
+        <span style={{ color: focused ? '#8b5cf6' : '#bbb', fontSize: 18, display: 'flex', transition: 'color 0.3s' }}>{icon}</span>
+        <input
+          type={type} value={value} onChange={onChange} required
+          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+          style={{
+            flex: 1, background: 'none', border: 'none', outline: 'none',
+            color: '#1a1a1a', fontSize: 15, padding: '14px 0',
+            fontFamily: "'DM Sans', sans-serif",
+          }}
+        />
+        {endIcon && <span style={{ cursor: 'pointer', color: '#bbb', display: 'flex', fontSize: 18 }}>{endIcon}</span>}
+      </div>
+    </div>
+  );
+};
+
+/* ── select field (dark text on white bg) ── */
+const SelectField = ({ icon, label, value, onChange, options }) => {
+  const [focused, setFocused] = useState(false);
+  return (
+    <div style={{ marginBottom: 22 }}>
+      <label style={{
+        display: 'block', fontSize: 12, fontWeight: 500, letterSpacing: '0.08em',
+        textTransform: 'uppercase', color: '#999', marginBottom: 8,
+      }}>
+        {label}
+      </label>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        background: focused ? '#f8f8f8' : '#f3f3f3',
+        border: `1.5px solid ${focused ? '#8b5cf6' : '#e8e8e8'}`,
+        borderRadius: 12, padding: '0 16px', transition: 'all 0.3s ease',
+      }}>
+        <span style={{ color: focused ? '#8b5cf6' : '#bbb', fontSize: 18, display: 'flex', transition: 'color 0.3s' }}>{icon}</span>
+        <select
+          value={value} onChange={onChange} required
+          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+          style={{
+            flex: 1, background: 'none', border: 'none', outline: 'none',
+            color: value ? '#1a1a1a' : '#aaa', fontSize: 15, padding: '14px 0',
+            fontFamily: "'DM Sans', sans-serif", cursor: 'pointer',
+            WebkitAppearance: 'none', MozAppearance: 'none',
+          }}
+        >
+          <option value="" disabled style={{ background: '#fff', color: '#aaa' }}>Seleccionar...</option>
+          {options.map(opt => (
+            <option key={opt} value={opt} style={{ background: '#fff', color: '#1a1a1a' }}>{opt}</option>
+          ))}
+        </select>
+        <span style={{ color: '#bbb', fontSize: 10 }}>▼</span>
+      </div>
+    </div>
+  );
+};
+
+/* ── SVG icons ── */
+const Icons = {
+  mail: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+    </svg>
+  ),
+  lock: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+  ),
+  eye: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
+    </svg>
+  ),
+  eyeOff: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/>
+    </svg>
+  ),
+  pin: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+    </svg>
+  ),
+  building: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>
+    </svg>
+  ),
+};
+
+/* ══════════════════════════════════════════════════
+   MAIN COMPONENT
+   ══════════════════════════════════════════════════ */
 export default function Login() {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    ciudad: '',
-    empresaId: ''
-  });
+  const [formData, setFormData] = useState({ email: '', password: '', ciudad: '', empresaId: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -69,591 +159,342 @@ export default function Login() {
 
   const ciudades = ['Mexicali', 'Tijuana', 'Ensenada', 'Rosarito', 'Tecate'];
 
-  const handleChange = (field) => (event) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: event.target.value
-    }));
+  const handleChange = (field) => (e) => {
+    setFormData(prev => ({ ...prev, [field]: e.target.value }));
     setError('');
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-  try {
-    // Llamada al endpoint de login CORREGIDO
-    const response = await fetch(`${API_BASE}/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData)
-    });
+    try {
+      const response = await fetch(`${API_BASE}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (response.ok) {
-      setSuccess('¡Login exitoso! Redirigiendo...');
-      
-      // Guardar en localStorage - CORREGIDO según tu backend
-      localStorage.setItem('empresaId', data.empresaId);
-      localStorage.setItem('ciudad', formData.ciudad);
-      localStorage.setItem('userEmail', formData.email);
-      
-      // Redirigir al monitor
-      setTimeout(() => {
-        window.location.href = '/monitor';
-      }, 1000);
-    } else {
-      throw new Error(data.error || 'Error en el login');
-    }
-  } catch (err) {
-    setError(err.message || 'Error de conexión');
-  } finally {
-    setLoading(false);
-  }
-};
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: 0.8,
-        staggerChildren: 0.2
+      if (response.ok) {
+        setSuccess('¡Login exitoso! Redirigiendo...');
+        localStorage.setItem('empresaId', data.empresaId);
+        localStorage.setItem('ciudad', formData.ciudad);
+        localStorage.setItem('userEmail', formData.email);
+        if (data.licencia) {
+          localStorage.setItem('plan', data.licencia.plan);
+          localStorage.setItem('licenciaTrial', data.licencia.licenciaTrial);
+          localStorage.setItem('diasRestantesTrial', data.licencia.diasRestantesTrial);
+        }
+        setTimeout(() => { window.location.href = '/monitor'; }, 1000);
+      } else {
+        if (data.codigo === 'TRIAL_EXPIRADO') {
+          setError(`${data.error} Actualiza tu plan para continuar.`);
+          setTimeout(() => { window.location.href = '/planes?expirado=true'; }, 2000);
+        } else if (data.codigo === 'PENDIENTE_PAGO') {
+          setError(`${data.error} Serás redirigido para completar el pago.`);
+          setTimeout(() => { window.location.href = '/planes?pendiente_pago=true'; }, 2000);
+        } else if (data.codigo === 'LICENCIA_EXPIRADA') {
+          setError(`${data.error} Serás redirigido para renovar.`);
+          setTimeout(() => { window.location.href = '/planes?renovar=true'; }, 2000);
+        } else {
+          throw new Error(data.error || 'Error en el login');
+        }
       }
+    } catch (err) {
+      setError(err.message || 'Error de conexión');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut"
-      }
-    }
+  const stagger = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.07, delayChildren: 0.15 } }
+  };
+  const fadeUp = {
+    hidden: { opacity: 0, y: 14 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] } }
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        background: `
-      radial-gradient(circle at 20% 80%, #4f46de 0%, transparent 55%),
-      radial-gradient(circle at 80% 20%, #351d79 0%, transparent 50%),
-      radial-gradient(circle at 60% 40%, #fe5953 5%, transparent 60%),
-      linear-gradient(135deg, #2e004f 0%, #351d79 50%, #4f46de 100%)
-        `,
-        display: 'flex',
-        position: 'relative',
-        overflow: 'hidden'
-      }}
-    >
-      {/* Elementos flotantes de fondo */}
-      <FloatingShape delay={0} size={200} color="#ff6b6b" top="10%" left="10%" />
-      <FloatingShape delay={2} size={150} color="#4ecdc4" top="70%" left="20%" />
-      <FloatingShape delay={4} size={180} color="#45b7d1" top="20%" right="15%" />
-      <FloatingShape delay={1} size={120} color="#96ceb4" bottom="10%" right="20%" />
-      <FloatingShape delay={3} size={160} color="#feca57" top="60%" right="10%" />
+    <>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
 
-{/* LADO IZQUIERDO - GIF */}
-<Box
-  sx={{
-    flex: 1,
-    display: { xs: 'none', lg: 'flex' },
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    overflow: 'hidden'
-  }}
->
-  <div
-    style={{
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      position: 'relative',
-      backdropFilter: 'blur(1px)' // ← Agrega este blur sutil
-    }}
-  >
+      <div style={{
+        minHeight: '100vh', display: 'flex', position: 'relative', overflow: 'hidden',
+        fontFamily: "'DM Sans', sans-serif",
+      }}>
 
-    {/* GIF con recarga continua */}
-    <img 
-      src={`${loginGif}?${Date.now()}`} // Fuerza recarga
-      alt="Tecnología animada"
-      style={{
-        width: '155%',
-        height: '155%', 
-        objectFit: 'contain',
-        borderRadius: '20px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
-      }}
-      onLoad={(e) => {
-        const img = e.target;
-        // Recarga cada 3 segundos
-        setInterval(() => {
-          const src = img.src.split('?')[0];
-          img.src = `${src}?${Date.now()}`;
-        },3500);
-      }}
-    />
+        {/* ── LEFT PANEL: BLACK with branding ── */}
+        <div className="left-panel" style={{
+          flex: 1, background: '#0a0a0a', position: 'relative', display: 'flex',
+          flexDirection: 'column', justifyContent: 'center', padding: '60px 70px',
+          overflow: 'hidden',
+        }}>
+          {/* bubbles on dark side */}
+          <Bubble size={300} top="-5%" left="60%" delay={0} opacity={0.06} />
+          <Bubble size={180} top="30%" left="70%" delay={1.5} opacity={0.05} />
+          <Bubble size={220} top="65%" left="55%" delay={3} opacity={0.07} />
+          <Bubble size={120} top="15%" left="20%" delay={2} opacity={0.04} color="rgba(255,255,255," />
+          <Bubble size={160} top="80%" left="10%" delay={4} opacity={0.03} color="rgba(255,255,255," />
+          <Bubble size={80} top="45%" left="80%" delay={1} opacity={0.09} />
+          <Bubble size={60} top="10%" left="45%" delay={3.5} opacity={0.04} color="rgba(255,255,255," />
 
-    {/* Overlay gradiente para difuminar los bordes */}
-    <Box
-      sx={{
-        position: 'absolute',
-        top: 0,
-        right: 0, // Gradiente en el borde derecho
-        bottom: 0,
-        width: '30%', // Ancho del gradiente
-        background: 'linear-gradient(90deg, transparent 0%, #2e004f 100%)',
-        pointerEvents: 'none'
-      }}
-    />
+          {/* content */}
+          <div style={{ position: 'relative', zIndex: 3 }}>
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 40 }}
+            >
+              <img src={grapeLogo} alt="Grape" style={{ width: 100, height: 100, objectFit: 'contain' }} />
+            </motion.div>
 
-    {/* Overlay adicional en todos los bordes para suavizar */}
-    {/* Overlay más suave */}
-    <Box
-      sx={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: `
-          linear-gradient(90deg, rgba(46, 0, 79, 0.6) 0%, transparent 30%),
-          linear-gradient(180deg, rgba(46, 0, 79, 0.4) 0%, transparent 20%, transparent 80%, rgba(46, 0, 79, 0.4) 100%)
-        `,
-        pointerEvents: 'none'
-      }}
-    />
-  </div>
-  
-  {/* Overlay gradiente principal (el que ya tenías) */}
-  <Box
-    sx={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'linear-gradient(90deg, rgba(46, 0, 79, 0.8) 0%, transparent 30%)',
-      pointerEvents: 'none'
-    }}
-  />
-</Box>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.7, delay: 0.4 }}
+              style={{ marginBottom: 20 }}
+            >
+              <span style={{
+                fontSize: 13, fontWeight: 500, color: '#8b5cf6',
+                textTransform: 'uppercase', letterSpacing: '0.2em',
+              }}>
+                Bienvenido a
+              </span>
+            </motion.div>
 
-      {/* LADO DERECHO - FORMULARIO */}
-      <Box
-        sx={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          p: 3
-        }}
-      >
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          
-        style={{ width: '100%', 
-          maxWidth: 440,
-          marginRight: '80px'  }}
-        >
-          <Card
-            sx={{
-              p: 4,
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              borderRadius: '24px',
-              boxShadow: `
-                0 8px 32px 0 rgba(31, 38, 135, 0.37),
-                0 0 0 1px rgba(255, 255, 255, 0.1),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.1)
-              `,
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-          >
-            {/* Efecto de brillo superior */}
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '1px',
-                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-                filter: 'blur(1px)'
+            <motion.h1
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.7, delay: 0.5 }}
+              style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontSize: 56, fontWeight: 700, color: '#fff',
+                lineHeight: 1.05, margin: '0 0 24px', letterSpacing: '-0.03em',
               }}
-            />
+            >
+              Grape<br />Monitor
+              <span style={{ color: '#8b5cf6' }}>.</span>
+            </motion.h1>
 
-            <motion.div variants={itemVariants}>
-              <Box sx={{ textAlign: 'center', mb: 4 }}>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                
-                {/* LOGO SIN FONDO */}
-                <Box
-                sx={{
-                    width: 70,
-                    height: 70,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto 16px',
-                    // Quitamos el fondo y sombra
-                    background: 'transparent',
-                    boxShadow: 'none'
-                }}
-                >
-                {/* Logo PNG sin fondo */}
-                <img 
-                    src={grapeLogo} 
-                    alt="Grape Logo"
-                    style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain',
-                    // Fondo transparente para PNG
-                    backgroundColor: 'transparent'
-                    }}
-                />
-                </Box>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7 }}
+              style={{
+                fontSize: 15, color: 'rgba(255,255,255,0.3)', lineHeight: 1.8,
+                maxWidth: 320, margin: 0,
+              }}
+            >
+              Sistema inteligente de monitoreo para tus impresoras. Controla tóner, copias y estado desde un solo lugar.
+            </motion.p>
 
+            {/* stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1 }}
+              style={{
+                display: 'flex', gap: 32, marginTop: 48,
+                padding: '20px 0', borderTop: '1px solid rgba(255,255,255,0.06)',
+              }}
+            >
+              {[
+                { num: '99.9%', label: 'Uptime' },
+                { num: '24/7', label: 'Monitoreo' },
+                { num: '5min', label: 'Refresh' },
+              ].map((s, i) => (
+                <div key={i}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: '#fff', fontFamily: "'Space Grotesk', sans-serif" }}>{s.num}</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: 4 }}>{s.label}</div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
 
-                </motion.div>
-                
-                <Typography 
-                  variant="h5" 
-                  sx={{ 
-                    fontWeight: 700, 
-                    background: 'linear-gradient(135deg, #fff 0%, #a8edea 100%)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    color: 'transparent',
-                    mb: 1
-                  }}
-                >
-                  Grape Monitor Pro
-                </Typography>
-                
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    color: 'rgba(255,255,255,0.7)',
-                    opacity: 0.9
-                  }}
-                >
-                  Sistema de Monitoreo de Impresoras
-                </Typography>
-              </Box>
+          {/* bottom indicator */}
+          <div style={{
+            position: 'absolute', bottom: 36, left: 70,
+            display: 'flex', alignItems: 'center', gap: 8, zIndex: 3,
+          }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>Sistema operativo</span>
+          </div>
+        </div>
+
+        {/* ── WAVY DIVIDER: black spilling over white ── */}
+        <div className="wavy-divider">
+          <WavyDivider />
+        </div>
+
+        {/* ── RIGHT PANEL: WHITE with form ── */}
+        <div style={{
+          flex: 1.5, background: '#ffffff', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', padding: 32,
+          position: 'relative', zIndex: 0,
+        }}>
+
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            animate="visible"
+            style={{ width: '100%', maxWidth: 380, position: 'relative', zIndex: 2 }}
+          >
+            {/* header */}
+            <motion.div variants={fadeUp} style={{ marginBottom: 32 }}>
+              <h2 style={{
+                fontSize: 26, fontWeight: 700, color: '#1a1a1a', margin: '0 0 6px',
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}>
+                Iniciar sesión
+              </h2>
+              <p style={{ fontSize: 14, color: '#999', margin: 0 }}>
+                Ingresa tus credenciales para continuar
+              </p>
             </motion.div>
 
+            {/* form */}
             <form onSubmit={handleSubmit}>
-              <motion.div variants={itemVariants}>
-                <TextField
-                  fullWidth
-                  label="Email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange('email')}
-                  required
-                  sx={{
-                    mb: 3,
-                    '& .MuiOutlinedInput-root': {
-                      color: 'white',
-                      borderRadius: '12px',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      '& fieldset': {
-                        borderColor: 'rgba(255, 255, 255, 0.2)',
-                      },
-                      '&:hover fieldset': {
-                        borderColor: 'rgba(255, 255, 255, 0.3)',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#667eea',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      color: 'rgba(255, 255, 255, 0.7)',
-                    },
-                    '& .MuiInputLabel-root.Mui-focused': {
-                      color: '#667eea',
-                    },
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Email sx={{ color: 'rgba(255,255,255,0.5)' }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
+              <motion.div variants={fadeUp}>
+                <InputField icon={Icons.mail} label="Email" type="email" value={formData.email} onChange={handleChange('email')} />
               </motion.div>
 
-              <motion.div variants={itemVariants}>
-                <TextField
-                  fullWidth
-                  label="Contraseña"
+              <motion.div variants={fadeUp}>
+                <InputField
+                  icon={Icons.lock} label="Contraseña"
                   type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={handleChange('password')}
-                  required
-                  sx={{
-                    mb: 3,
-                    '& .MuiOutlinedInput-root': {
-                      color: 'white',
-                      borderRadius: '12px',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      '& fieldset': {
-                        borderColor: 'rgba(255, 255, 255, 0.2)',
-                      },
-                      '&:hover fieldset': {
-                        borderColor: 'rgba(255, 255, 255, 0.3)',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#667eea',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      color: 'rgba(255, 255, 255, 0.7)',
-                    },
-                    '& .MuiInputLabel-root.Mui-focused': {
-                      color: '#667eea',
-                    },
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Lock sx={{ color: 'rgba(255,255,255,0.5)' }} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Button
-                          size="small"
-                          onClick={() => setShowPassword(!showPassword)}
-                          sx={{ minWidth: 'auto', color: 'rgba(255,255,255,0.5)' }}
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </Button>
-                      </InputAdornment>
-                    ),
-                  }}
+                  value={formData.password} onChange={handleChange('password')}
+                  endIcon={
+                    <span onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? Icons.eyeOff : Icons.eye}
+                    </span>
+                  }
                 />
               </motion.div>
 
-              <motion.div variants={itemVariants}>
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                  <InputLabel sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                    Ciudad
-                  </InputLabel>
-                  <Select
-                    value={formData.ciudad}
-                    onChange={handleChange('ciudad')}
-                    label="Ciudad"
-                    required
-                    sx={{
-                      color: 'white',
-                      borderRadius: '12px',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgba(255, 255, 255, 0.2)',
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'rgba(255, 255, 255, 0.3)',
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#667eea',
-                      },
-                    }}
-                    startAdornment={
-                      <InputAdornment position="start" sx={{ mr: 1 }}>
-                        <LocationOn sx={{ color: 'rgba(255,255,255,0.5)' }} />
-                      </InputAdornment>
-                    }
-                  >
-                    {ciudades.map((ciudad) => (
-                      <MenuItem key={ciudad} value={ciudad} sx={{ color: '#333' }}>
-                        {ciudad}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+              <motion.div variants={fadeUp}>
+                <SelectField icon={Icons.pin} label="Ciudad" value={formData.ciudad} onChange={handleChange('ciudad')} options={ciudades} />
               </motion.div>
 
-              <motion.div variants={itemVariants}>
-             
-              <TextField
-                fullWidth
-                label="Empresa"
-                value={formData.empresaId}
-                onChange={handleChange('empresaId')}
-                required
-                sx={{
-                  mb: 3,
-                  '& .MuiOutlinedInput-root': {
-                    color: 'white',
-                    borderRadius: '12px',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    '& fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.2)',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.3)',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#667eea',
-                    },
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: 'rgba(255, 255, 255, 0.7)',
-                  },
-                  '& .MuiInputLabel-root.Mui-focused': {
-                    color: '#667eea',
-                  },
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Business sx={{ color: 'rgba(255,255,255,0.5)' }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </motion.div>
+              <motion.div variants={fadeUp}>
+                <InputField icon={Icons.building} label="Empresa ID" value={formData.empresaId} onChange={handleChange('empresaId')} />
+              </motion.div>
 
+              {/* alerts */}
               <AnimatePresence>
                 {error && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
+                    initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                    style={{
+                      padding: '12px 16px', borderRadius: 10, marginBottom: 16,
+                      background: '#fef2f2', border: '1px solid #fecaca',
+                      color: '#dc2626', fontSize: 13,
+                    }}
                   >
-                    <Alert severity="error" sx={{ mb: 2, borderRadius: '12px' }}>
-                      {error}
-                    </Alert>
+                    {error}
                   </motion.div>
                 )}
-                
                 {success && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
+                    initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                    style={{
+                      padding: '12px 16px', borderRadius: 10, marginBottom: 16,
+                      background: '#f0fdf4', border: '1px solid #bbf7d0',
+                      color: '#16a34a', fontSize: 13,
+                    }}
                   >
-                    <Alert severity="success" sx={{ mb: 2, borderRadius: '12px' }}>
-                      {success}
-                    </Alert>
+                    {success}
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              <motion.div variants={itemVariants}>
-                <Button
-                  type="submit"
-                  fullWidth
-                  disabled={loading}
-                  sx={{
-                    py: 1.5,
-                    borderRadius: '12px',
-                    background: 'linear-gradient(135deg, #7173feff 10%, #541888ff 100%)',
-                    color: 'white',
-                    fontWeight: 700,
-                    fontSize: '1.1rem',
-                    boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4)',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #541888ff 10%, #7173feff 100%)',
-                      boxShadow: '0 12px 40px rgba(102, 126, 234, 0.6)',
-                      transform: 'translateY(-2px)'
-                    },
-                    '&:disabled': {
-                      opacity: 0.6
-                    },
-                    transition: 'all 0.3s ease'
+              {/* submit - black button on white bg */}
+              <motion.div variants={fadeUp}>
+                <motion.button
+                  type="submit" disabled={loading}
+                  whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+                  style={{
+                    width: '100%', padding: '15px 0', border: 'none', borderRadius: 12,
+                    background: '#0a0a0a', color: '#fff',
+                    fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                    fontFamily: "'DM Sans', sans-serif",
+                    opacity: loading ? 0.5 : 1, transition: 'all 0.2s ease',
                   }}
                 >
                   {loading ? (
                     <motion.span
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    >
-                      ⏳
-                    </motion.span>
-                  ) : (
-                    'Acceder al Sistema'
-                  )}
-                </Button>
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      style={{ display: 'inline-block' }}
+                    >⏳</motion.span>
+                  ) : 'Acceder'}
+                </motion.button>
               </motion.div>
             </form>
 
-            <motion.div variants={itemVariants}>
-              <Box sx={{ mt: 3, textAlign: 'center' }}>
-                <Typography variant="body2" sx={{ 
-                  color: 'rgba(255,255,255,0.7)',
-                  mb: 2 
-                }}>
-                  ¿No tienes cuenta?
-                </Typography>
-                
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  onClick={() => window.location.href = '/registro'}
-                  sx={{
-                    py: 1.2,
-                    borderRadius: '12px',
-                    borderColor: 'rgba(255,255,255,0.3)',
-                    color: 'white',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    mb: 1.5,
-                    '&:hover': {
-                      borderColor: 'rgba(255,255,255,0.5)',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                    }
-                  }}
-                >
-                  Registrarme Gratis (7 días de Trial)
-                </Button>
-                
-                <Button
-                  fullWidth
-                  variant="contained"
-                  onClick={() => window.location.href = '/planes'}
-                  sx={{
-                    py: 1.2,
-                    borderRadius: '12px',
-                    background: 'linear-gradient(135deg, #00C853 0%, #64DD17 100%)',
-                    color: 'white',
-                    fontWeight: 700,
-                    boxShadow: '0 4px 20px rgba(100, 221, 23, 0.3)',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #64DD17 0%, #00C853 100%)',
-                      boxShadow: '0 6px 25px rgba(100, 221, 23, 0.5)',
-                    }
-                  }}
-                >
-                  Ver Planes de Pago
-                </Button>
-              </Box>
+            {/* divider */}
+            <motion.div variants={fadeUp} style={{
+              display: 'flex', alignItems: 'center', gap: 16, margin: '24px 0',
+            }}>
+              <div style={{ flex: 1, height: 1, background: '#eee' }} />
+              <span style={{ fontSize: 11, color: '#ccc', textTransform: 'uppercase', letterSpacing: '0.12em' }}>o</span>
+              <div style={{ flex: 1, height: 1, background: '#eee' }} />
             </motion.div>
-          </Card>
-        </motion.div>
-      </Box>
-    </Box>
+
+            {/* secondary actions */}
+            <motion.div variants={fadeUp} style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => window.location.href = '/registro'}
+                style={{
+                  flex: 1, padding: '12px 0', borderRadius: 12,
+                  background: 'transparent', border: '1.5px solid #e5e5e5',
+                  color: '#888', fontSize: 13, cursor: 'pointer',
+                  fontFamily: "'DM Sans', sans-serif", fontWeight: 500,
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={e => { e.target.style.borderColor = '#ccc'; e.target.style.color = '#333'; }}
+                onMouseLeave={e => { e.target.style.borderColor = '#e5e5e5'; e.target.style.color = '#888'; }}
+              >
+                Registrarme gratis
+              </button>
+              <button
+                onClick={() => window.location.href = '/planes'}
+                style={{
+                  flex: 1, padding: '12px 0', borderRadius: 12,
+                  background: '#f5f3ff', border: '1.5px solid #e9e5ff',
+                  color: '#7c3aed', fontSize: 13, cursor: 'pointer',
+                  fontFamily: "'DM Sans', sans-serif", fontWeight: 500,
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={e => { e.target.style.background = '#ede9fe'; e.target.style.borderColor = '#ddd6fe'; }}
+                onMouseLeave={e => { e.target.style.background = '#f5f3ff'; e.target.style.borderColor = '#e9e5ff'; }}
+              >
+                Ver planes
+              </button>
+            </motion.div>
+
+            {/* footer */}
+            <motion.div variants={fadeUp} style={{ textAlign: 'center', marginTop: 28 }}>
+              <span style={{ fontSize: 11, color: '#ccc' }}>
+                © {new Date().getFullYear()} GrapeLabs · grapelabs.org
+              </span>
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* ── responsive ── */}
+        <style>{`
+          @media (max-width: 900px) {
+            .left-panel { display: none !important; }
+            .wavy-divider { display: none !important; }
+          }
+        `}</style>
+      </div>
+    </>
   );
 }

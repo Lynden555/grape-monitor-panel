@@ -2,18 +2,17 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
-import Monitor from './components/monitor';
+import Monitor from './components/EmpresasPanel';
+import Planes from './components/Planes';
 import './App.css';
 
 // Componente para proteger rutas
 const ProtectedRoute = ({ children }) => {
   const empresaId = localStorage.getItem('empresaId');
   const ciudad = localStorage.getItem('ciudad');
-  
   if (!empresaId || !ciudad) {
     return <Navigate to="/login" replace />;
   }
-  
   return children;
 };
 
@@ -21,11 +20,9 @@ const ProtectedRoute = ({ children }) => {
 const PublicRoute = ({ children }) => {
   const empresaId = localStorage.getItem('empresaId');
   const ciudad = localStorage.getItem('ciudad');
-  
   if (empresaId && ciudad) {
     return <Navigate to="/monitor" replace />;
   }
-  
   return children;
 };
 
@@ -48,6 +45,7 @@ function App() {
             <Monitor />
           </ProtectedRoute>
         } />
+        <Route path="/planes" element={<Planes />} />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>

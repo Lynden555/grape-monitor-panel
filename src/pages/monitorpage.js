@@ -1,7 +1,7 @@
 import React from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import Monitor from '../components/monitor';
+import Monitor from '../components/EmpresasPanel/monitor';
 
 const darkTheme = createTheme({
   palette: {
