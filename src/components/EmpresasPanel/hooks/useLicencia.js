@@ -12,7 +12,7 @@ export const useLicencia = () => {
 
       if (!empresaId || !ciudad || !email) {
         console.log('❌ No hay credenciales, redirigiendo a login');
-        window.location.href = '/login';
+        window.location.href = '/#/login';
         return false;
       }
 
@@ -29,14 +29,14 @@ export const useLicencia = () => {
       // SI NO PUEDE ACCEDER → REDIRIGIR
       if (!licenciaData.puedeAcceder) {
         let mensaje = '';
-        let url = '/planes';
+        let url = '/#/planes';
 
         if (licenciaData.datosLicencia.tipo === 'trial_expirado') {
           mensaje = `⏰ Tu trial expiró. Actualiza tu plan para continuar usando Grape Monitor.`;
-          url = '/planes?expirado=true';
+          url = '/#/planes?expirado=true';
         } else if (licenciaData.datosLicencia.tipo === 'pendiente_pago') {
           mensaje = `💳 Tu plan ${licenciaData.usuario.plan.toUpperCase()} está pendiente de pago.`;
-          url = `/planes?pendiente_pago=true&plan=${licenciaData.usuario.plan}`;
+          url = `/#/planes?pendiente_pago=true&plan=${licenciaData.usuario.plan}`;
         } else {
           mensaje = '🚫 Tu licencia no es válida. Contacta a soporte.';
         }

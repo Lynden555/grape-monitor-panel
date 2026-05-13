@@ -128,7 +128,7 @@ export default function Planes() {
         background: 'transparent', color: '#1a1a1a',
         border: '1.5px solid #ddd',
       },
-      onSelect: () => window.location.href = '/registro',
+      onSelect: () => window.location.href = '/#/registro',
     },
     {
       plan: 'Starter',
@@ -267,7 +267,7 @@ flexWrap: 'nowrap', marginBottom: 0,
               ¿Tienes preguntas? Contacta a nuestro equipo en ventas@grape.com
             </p>
             <button
-              onClick={() => window.location.href = '/'}
+              onClick={() => window.location.href = '/#/'}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 color: 'rgba(255,255,255,0.35)', fontSize: 14,

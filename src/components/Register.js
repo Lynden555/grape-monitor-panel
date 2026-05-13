@@ -166,12 +166,12 @@ export default function Register() {
         localStorage.setItem('plan', formData.planSeleccionado || 'trial');
         if (!formData.planSeleccionado) {
           setSuccess('¡Registro exitoso! Tienes 7 días de trial gratis. Redirigiendo...');
-          setTimeout(() => { window.location.href = '/monitor'; }, 2000);
+          setTimeout(() => { window.location.href = '/#/monitor'; }, 2000);
         } else {
           setSuccess(`¡Registro exitoso! Tienes ${diasTrial} días de trial. Ahora procede al pago.`);
           setTimeout(() => {
             alert(`[TEMPORAL] Aquí iría Stripe Checkout para el plan ${formData.planSeleccionado}`);
-            window.location.href = '/monitor';
+            window.location.href = '/#/monitor';
           }, 3000);
         }
       } else {

@@ -9,5 +9,5 @@ export const handleLogout = () => {
   localStorage.removeItem('empresaId');
   localStorage.removeItem('ciudad');
   localStorage.removeItem('userEmail');
-  window.location.href = '/login';
+  window.location.href = '/#/login';
 };

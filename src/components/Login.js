@@ -188,17 +188,17 @@ export default function Login() {
           localStorage.setItem('licenciaTrial', data.licencia.licenciaTrial);
           localStorage.setItem('diasRestantesTrial', data.licencia.diasRestantesTrial);
         }
-        setTimeout(() => { window.location.href = '/monitor'; }, 1000);
+        setTimeout(() => { window.location.href = '/#/monitor'; }, 1000);
       } else {
         if (data.codigo === 'TRIAL_EXPIRADO') {
           setError(`${data.error} Actualiza tu plan para continuar.`);
-          setTimeout(() => { window.location.href = '/planes?expirado=true'; }, 2000);
+          setTimeout(() => { window.location.href = '/#/planes?expirado=true'; }, 2000);
         } else if (data.codigo === 'PENDIENTE_PAGO') {
           setError(`${data.error} Serás redirigido para completar el pago.`);
-          setTimeout(() => { window.location.href = '/planes?pendiente_pago=true'; }, 2000);
+          setTimeout(() => { window.location.href = '/#/planes?pendiente_pago=true'; }, 2000);
         } else if (data.codigo === 'LICENCIA_EXPIRADA') {
           setError(`${data.error} Serás redirigido para renovar.`);
-          setTimeout(() => { window.location.href = '/planes?renovar=true'; }, 2000);
+          setTimeout(() => { window.location.href = '/#/planes?renovar=true'; }, 2000);
         } else {
           throw new Error(data.error || 'Error en el login');
         }
@@ -449,7 +449,7 @@ export default function Login() {
             {/* secondary actions */}
             <motion.div variants={fadeUp} style={{ display: 'flex', gap: 10 }}>
               <button
-                onClick={() => window.location.href = '/registro'}
+                onClick={() => window.location.href = '/#/registro'}
                 style={{
                   flex: 1, padding: '12px 0', borderRadius: 12,
                   background: 'transparent', border: '1.5px solid #e5e5e5',
@@ -463,7 +463,7 @@ export default function Login() {
                 Registrarme gratis
               </button>
               <button
-                onClick={() => window.location.href = '/planes'}
+                onClick={() => window.location.href = '/#/planes'}
                 style={{
                   flex: 1, padding: '12px 0', borderRadius: 12,
                   background: '#f5f3ff', border: '1.5px solid #e9e5ff',

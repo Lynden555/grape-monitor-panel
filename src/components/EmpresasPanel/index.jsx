@@ -102,7 +102,7 @@ export default function EmpresasPanel() {
   useEffect(() => {
     const { empresaId } = getScope();
     if (!empresaId) {
-      window.location.replace('/login');
+      window.location.replace('/#/login');
       return;
     }
     setIsAuthReady(true);
@@ -136,7 +136,7 @@ useEffect(() => {
         setSelectedEmpresa(null);
         clearPrinters();
         localStorage.removeItem('selectedEmpresaId');
-        window.location.replace('/login');
+        window.location.replace('/#/login');
         return false;
       }
       return true;
