@@ -37,10 +37,10 @@ const CreateEmpresaForm = ({
           letterSpacing: 0.5,
           fontFamily: '"Space Grotesk", sans-serif',
         }}>
-          ⚙️ Agregar empresa & generar ApiKey
+          ⚙️ Agregar impresoras & generar ApiKey
         </Typography>
         <Typography sx={{ color: '#999999', mt: 0.5, fontSize: '0.9rem' }}>
-          Crea una empresa y comparte su ApiKey al técnico para configurar el Agente.
+          Crea una impresora y comparte su ApiKey al técnico para configurar el Agente.
         </Typography>
       </Box>
 
@@ -68,7 +68,7 @@ const CreateEmpresaForm = ({
           )}
 
           <TextField
-            label="Nombre de la empresa"
+            label="Nombre de la locacion o empresa"
             variant="outlined"
             fullWidth
             value={nombre}

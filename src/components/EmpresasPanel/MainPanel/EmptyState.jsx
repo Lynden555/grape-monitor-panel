@@ -41,7 +41,7 @@ const EmptyState = ({ onCreateEmpresa, onCreateFolder }) => {
           color: '#1a1a1a',
           fontFamily: '"Space Grotesk", sans-serif',
         }}>
-          Selecciona una empresa
+          Selecciona una impresora
         </Typography>
         <Typography sx={{
           opacity: 0.6,
@@ -51,7 +51,7 @@ const EmptyState = ({ onCreateEmpresa, onCreateFolder }) => {
           fontSize: '1.05rem',
           color: '#1a1a1a',
         }}>
-          Haz clic en una empresa del panel izquierdo para ver sus impresoras y comenzar el monitoreo.
+          Haz clic en una carpeta del panel izquierdo para ver sus impresoras y comenzar el monitoreo.
         </Typography>
         <Divider sx={{
           borderColor: '#f0f0f0',
@@ -68,7 +68,7 @@ const EmptyState = ({ onCreateEmpresa, onCreateFolder }) => {
         }}>
           <Chip
             icon={<AddCircleIcon />}
-            label="Crear nueva empresa"
+            label="Crear nueva impresora"
             onClick={onCreateEmpresa}
             sx={{
               bgcolor: 'rgba(139, 92, 246, 0.08)',
