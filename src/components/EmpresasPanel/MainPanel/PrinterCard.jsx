@@ -56,7 +56,7 @@ const PrinterCard = ({
       >
         <PrintIcon sx={{ color: '#8b5cf6' }} />
         <Typography sx={{ fontWeight: 800, color: '#1a1a1a' }}>
-          {printer.printerName || printer.sysName || printer.host}
+          {printer.displayName || printer.customName || printer.printerName || printer.sysName || printer.host}
         </Typography>
 
         <Chip
