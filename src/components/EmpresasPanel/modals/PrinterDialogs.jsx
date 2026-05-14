@@ -142,13 +142,16 @@ export const RenamePrinterDialog = ({ dialog, setDialog, onConfirm }) => (
       >
         Cancelar
       </Button>
-      <Button
-        onClick={onConfirm}
-        disabled={!dialog.newName.trim()}
-        sx={primaryBtnSx('#8b5cf6')}
-      >
-        Renombrar
-      </Button>
+<Button
+  onClick={() => {
+    console.log('🟡 CLICK!');
+    onConfirm();
+  }}
+  // disabled={!dialog.newName.trim()}   ← comenta esta línea
+  sx={primaryBtnSx('#8b5cf6')}
+>
+  Renombrar
+</Button>
     </DialogActions>
   </Dialog>
 );
@@ -172,7 +175,7 @@ export const DeletePrinterDialog = ({ dialog, setDialog, onConfirm }) => (
     </DialogTitle>
     <DialogContent>
       <Typography sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 1 }}>
-        ¿Eliminar la impresora <strong>"{dialog.printer?.printerName || dialog.printer?.host}"</strong>?
+        ¿Eliminar la impresora <strong>"{dialog.printer?.displayName}"</strong>?
       </Typography>
       <Typography sx={{ color: '#ef4444', fontSize: '13px', fontWeight: 500 }}>
         Esta acción no se puede deshacer y se perderán todos los datos históricos.

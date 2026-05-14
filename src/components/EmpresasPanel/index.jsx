@@ -295,7 +295,7 @@ useEffect(() => {
     const printer = printers.find(p => p._id === printerId);
     setConfirmacionCorte({
       printerId,
-      printerName: printer?.printerName || printer?.host || 'Impresora'
+      printerName: printer?.displayName || 'Impresora'
     });
   };
 
@@ -317,7 +317,7 @@ useEffect(() => {
     try {
       setErrorMsg(''); setSuccessMsg('');
       const printer = printers.find(p => p._id === printerId);
-      const printerName = printer?.printerName || printer?.host || 'impresora';
+      const printerName = printer?.displayName || 'impresora';
       const fileName = await generarPDF(printerId, printerName);
       setSuccessMsg(`📄 PDF "${fileName}" descargado correctamente`);
     } catch (err) {
@@ -325,8 +325,10 @@ useEffect(() => {
     }
   };
 
-  const handleConfirmRenamePrinter = async () => {
-    if (renamePrinterDialog.printer && renamePrinterDialog.newName.trim()) {
+const handleConfirmRenamePrinter = async () => {
+  console.log('🔵 handleConfirmRenamePrinter llamado', renamePrinterDialog);
+  if (renamePrinterDialog.printer && renamePrinterDialog.newName.trim()) {
+    console.log('🟢 Entró al if, llamando renamePrinter...');
       try {
         const printerId = renamePrinterDialog.printer._id;
         const newName = renamePrinterDialog.newName.trim();
@@ -343,7 +345,7 @@ useEffect(() => {
     if (deletePrinterDialog.printer) {
       try {
         const printerId = deletePrinterDialog.printer._id;
-        const printerName = deletePrinterDialog.printer.printerName || deletePrinterDialog.printer.host;
+        const printerName = deletePrinterDialog.printer.displayName;
         await deletePrinter(printerId);
         setSuccessMsg(`Impresora "${printerName}" eliminada correctamente`);
         setDeletePrinterDialog({ open: false, printer: null });

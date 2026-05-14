@@ -97,7 +97,7 @@ export const usePrinters = () => {
     if (!res.ok || !data?.ok) throw new Error(data?.error || 'Error renombrando impresora');
 
     setPrinters(prev =>
-      prev.map(p => (p._id === printerId ? { ...p, printerName: newName } : p))
+      prev.map(p => (p._id === printerId ? { ...p, customName: newName, displayName: newName } : p))
     );
     return true;
   };
@@ -182,7 +182,7 @@ export const usePrinters = () => {
     setRenamePrinterDialog({
       open: true,
       printer,
-      newName: printer.printerName || printer.sysName || printer.host || '',
+      newName: printer.displayName || '',
     });
     handleClosePrinterContextMenu();
   };
