@@ -2,10 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Box } from '@mui/material';
 
 // Hooks
-import { useLicencia } from './hooks/useLicencia';
 import { useFolderManager } from './hooks/useFolderManager';
 import { useEmpresas } from './hooks/useEmpresas';
 import { usePrinters } from './hooks/usePrinters';
+import { usePlanInfo } from './hooks/usePlanInfo';
 
 // Componentes
 import Sidebar from './Sidebar/Sidebar';
@@ -34,6 +34,8 @@ import {
 import ConfirmCorteModal from './modals/ConfirmCorteModal';
 import ApiKeyModal from './modals/ApiKeyModal';
 import DownloadAgentModal from './modals/DownloadAgentModal';
+import UpgradeModal from './modals/UpgradeModal';
+import TrialExpiredModal from './modals/TrialExpiredModal';
 
 // Utils
 import { getScope } from './utils/scopeHelpers';
@@ -47,16 +49,33 @@ export default function EmpresasPanel() {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  const [modalOpen, setModalOpen] = useState(false);
+const [modalOpen, setModalOpen] = useState(false);
   const [empresaRecienCreada, setEmpresaRecienCreada] = useState(null);
   const [downloadAgentOpen, setDownloadAgentOpen] = useState(false);
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [upgradeMotivo, setUpgradeMotivo] = useState(null);
 
   const [currentFolderId, setCurrentFolderId] = useState(null);
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
 
   // ============== HOOKS ==============
-  useLicencia();
+const {
+    planInfo,
+    loading: planLoading,
+    refetch: refetchPlanInfo,
+    porcentajeUso,
+    cercaDelLimite,
+    enLimite,
+    trialPorExpirar,
+    trialExpirado,
+  } = usePlanInfo();
+
+  // Determinar si la cuenta está bloqueada
+  // (trial expirado o cuenta inactiva)
+  const cuentaBloqueada = planInfo
+    ? (planInfo.trialExpirado === true || planInfo.activo === false)
+    : false;
 
   const folderManager = useFolderManager();
   const empresasManager = useEmpresas();
@@ -115,14 +134,25 @@ export default function EmpresasPanel() {
   }, [isAuthReady]);
 
   // ============== POLLING DE IMPRESORAS ==============
-useEffect(() => {
-    if (!isAuthReady || !selectedEmpresa?._id || mode !== 'empresa') return;
-    const tick = () => {
-      loadPrinters(selectedEmpresa._id, selectedEmpresa.nombre);
-    };
-    const t = setInterval(tick, 120_000);
-    return () => clearInterval(t);
-  }, [isAuthReady, selectedEmpresa?._id, mode]);
+// Detectar si hay impresoras inactivas (agente detectó la 6ª+)
+  // Auto-abre modal upgrade la primera vez que detecta
+  useEffect(() => {
+    if (!planInfo || planInfo.impresorasInactivas === 0) return;
+
+    const yaAvisado = sessionStorage.getItem('upgrade_avisado');
+    if (yaAvisado) return;
+
+    setUpgradeMotivo('agente_excedido');
+    setUpgradeModalOpen(true);
+    sessionStorage.setItem('upgrade_avisado', 'true');
+  }, [planInfo?.impresorasInactivas]);
+
+  // Refrescar plan info cuando se actualiza la lista de impresoras
+  useEffect(() => {
+    if (printers.length > 0) {
+      refetchPlanInfo();
+    }
+  }, [printers.length]);
 
   // ============== DETECCIÓN DE CAMBIO DE SCOPE ==============
   useEffect(() => {
@@ -424,10 +454,20 @@ const handleConfirmRenamePrinter = async () => {
 background: '#fcfcfc',
       }}
     >
-      <Sidebar
+<Sidebar
         onCreateFolder={() => setFolderDialogOpen(true)}
         onCreateEmpresa={() => { setMode('create'); setSelectedEmpresa(null); }}
         onDownloadAgent={() => setDownloadAgentOpen(true)}
+        onOpenUpgrade={() => {
+          setUpgradeMotivo(null); // Apertura manual desde botón
+          setUpgradeModalOpen(true);
+        }}
+        planInfo={planInfo}
+        planLoading={planLoading}
+        porcentajeUso={porcentajeUso}
+        cercaDelLimite={cercaDelLimite}
+        enLimite={enLimite}
+        trialPorExpirar={trialPorExpirar}
         loading={loading}
         currentFolderId={currentFolderId}
         folderPath={folderPath}
@@ -559,10 +599,28 @@ background: '#fcfcfc',
         onCopySuccess={(msg) => setSuccessMsg(msg)}
         onCopyError={(msg) => setErrorMsg(msg)}
       />
-      <DownloadAgentModal
+<DownloadAgentModal
         open={downloadAgentOpen}
         onClose={() => setDownloadAgentOpen(false)}
         onDownloadSuccess={(msg) => setSuccessMsg(msg)}
+      />
+
+      {/* ============== MODALES DE PLAN ============== */}
+      <UpgradeModal
+        open={upgradeModalOpen}
+        onClose={() => setUpgradeModalOpen(false)}
+        planActual={planInfo?.plan || 'trial'}
+        impresorasActivas={planInfo?.impresorasActivas || 0}
+        limiteActual={planInfo?.limiteImpresoras || 5}
+        motivo={upgradeMotivo}
+      />
+
+<TrialExpiredModal
+        open={cuentaBloqueada}
+        onUpgrade={() => {
+          setUpgradeMotivo('limite_alcanzado');
+          setUpgradeModalOpen(true);
+        }}
       />
     </Box>
   );

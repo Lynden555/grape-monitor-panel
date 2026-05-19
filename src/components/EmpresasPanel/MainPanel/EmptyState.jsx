@@ -68,7 +68,7 @@ const EmptyState = ({ onCreateEmpresa, onCreateFolder }) => {
         }}>
           <Chip
             icon={<AddCircleIcon />}
-            label="Crear nueva impresora"
+            label="Agregar nuevo cliente"
             onClick={onCreateEmpresa}
             sx={{
               bgcolor: 'rgba(139, 92, 246, 0.08)',

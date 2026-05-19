@@ -117,7 +117,7 @@ border: '1.5px solid rgba(139,92,246,0.35)',
 }
           }}
         >
-          Agregar Impresora
+          Agregar Cliente
         </Button>
 
         <Button

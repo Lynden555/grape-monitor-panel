@@ -6,6 +6,7 @@ import {
 import PrintIcon from '@mui/icons-material/Print';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { tonerPercent } from '../utils/tonerHelpers';
 
 const PrinterCard = ({
@@ -79,6 +80,29 @@ const PrinterCard = ({
                 })
           }}
         />
+
+        {/* NUEVO: Badge "Sin monitorear" cuando monitoreoActivo es false */}
+        {printer.monitoreoActivo === false && (
+          <Tooltip title="Excede el límite de tu plan. Actualiza para activar el monitoreo.">
+            <Chip
+              icon={<VisibilityOffIcon sx={{ fontSize: '14px !important', color: '#999 !important' }} />}
+              label="Sin monitorear"
+              size="small"
+              sx={{
+                ml: 1,
+                fontWeight: 600,
+                fontSize: '11px',
+                borderRadius: '20px',
+                color: '#666',
+                border: '1px solid #e0e0e0',
+                bgcolor: '#f5f5f5',
+                '& .MuiChip-icon': {
+                  ml: '4px',
+                }
+              }}
+            />
+          </Tooltip>
+        )}
 
         {low && (
           <Tooltip title="Tóner bajo">
