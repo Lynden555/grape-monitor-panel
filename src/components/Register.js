@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import grapeLogo from './images/grape.png';
+import { COUNTRIES } from '../constants/countries';   
 
 const API_BASE = 'https://grape-monitor-production.up.railway.app';
 
@@ -31,15 +32,61 @@ const Icons = {
   rocket: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09Z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2Z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>,
 };
 
+/* ── label con icono de ayuda y tooltip ── */
+const LabelWithHelper = ({ label, helpText }) => {
+  const [showTip, setShowTip] = useState(false);
+  return (
+    <label style={{
+      display: 'flex', alignItems: 'center', gap: 6,
+      fontSize: 12, fontWeight: 500, letterSpacing: '0.08em',
+      textTransform: 'uppercase', color: '#999', marginBottom: 8,
+      position: 'relative',
+    }}>
+      {label}
+      <span
+        onMouseEnter={() => setShowTip(true)}
+        onMouseLeave={() => setShowTip(false)}
+        onClick={() => setShowTip(prev => !prev)}
+        style={{
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          width: 16, height: 16, borderRadius: '50%',
+          background: '#e8e8e8', color: '#888',
+          fontSize: 11, fontWeight: 700, cursor: 'help',
+          textTransform: 'none', letterSpacing: 0,
+          transition: 'all 0.2s ease',
+        }}
+      >
+        ?
+      </span>
+      {showTip && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, marginTop: 6,
+          background: '#1a1a1a', color: '#fff',
+          padding: '10px 14px', borderRadius: 10,
+          fontSize: 11, fontWeight: 400, textTransform: 'none', letterSpacing: 0.2,
+          lineHeight: 1.5, maxWidth: 280, zIndex: 100,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+        }}>
+          {helpText}
+        </div>
+      )}
+    </label>
+  );
+};
+
 /* ── input component ── */
-const InputField = ({ icon, label, type = 'text', value, onChange, endIcon }) => {
+const InputField = ({ icon, label, type = 'text', value, onChange, endIcon, helpText }) => {
   const [focused, setFocused] = useState(false);
   return (
     <div style={{ marginBottom: 18 }}>
-      <label style={{
-        display: 'block', fontSize: 12, fontWeight: 500, letterSpacing: '0.08em',
-        textTransform: 'uppercase', color: '#999', marginBottom: 8,
-      }}>{label}</label>
+      {helpText ? (
+        <LabelWithHelper label={label} helpText={helpText} />
+      ) : (
+        <label style={{
+          display: 'block', fontSize: 12, fontWeight: 500, letterSpacing: '0.08em',
+          textTransform: 'uppercase', color: '#999', marginBottom: 8,
+        }}>{label}</label>
+      )}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 12,
         background: focused ? '#f8f8f8' : '#f3f3f3',
@@ -88,10 +135,19 @@ const SelectField = ({ icon, label, value, onChange, options }) => {
             WebkitAppearance: 'none', MozAppearance: 'none',
           }}
         >
-          <option value="" disabled style={{ background: '#fff', color: '#aaa' }}>Seleccionar...</option>
-          {options.map(opt => (
-            <option key={opt} value={opt} style={{ background: '#fff', color: '#1a1a1a' }}>{opt}</option>
-          ))}
+<option value="" disabled style={{ background: '#fff', color: '#aaa' }}>Seleccionar...</option>
+          {options.map(opt => {
+            const isObject = typeof opt === 'object';
+            const optValue = isObject ? opt.code : opt;
+            const optLabel = isObject ? opt.name : opt;
+
+            if (optValue === '__SEP__') {
+              return <option key={optValue} disabled style={{ background: '#fff', color: '#ccc' }}>{optLabel}</option>;
+            }
+            return (
+              <option key={optValue} value={optValue} style={{ background: '#fff', color: '#1a1a1a' }}>{optLabel}</option>
+            );
+          })}
         </select>
         <span style={{ color: '#bbb', fontSize: 10 }}>▼</span>
       </div>
@@ -115,12 +171,11 @@ export default function Register() {
 
   const [formData, setFormData] = useState({
     email: '', password: '', confirmPassword: '',
-    ciudad: '', empresaId: '',
+    sucursal: '', empresaId: '', pais: '',   
     planSeleccionado: planFromUrl,
   });
 
-  const ciudades = ['Mexicali', 'Tijuana', 'Ensenada', 'Rosarito', 'Tecate'];
-  const steps = ['Credenciales', 'Empresa', 'Confirmar'];
+const steps = ['Credenciales', 'Empresa', 'Confirmar'];
 
   const handleChange = (field) => (e) => {
     setFormData(prev => ({ ...prev, [field]: e.target.value }));
@@ -134,9 +189,19 @@ export default function Register() {
       if (formData.password !== formData.confirmPassword) { setError('Las contraseñas no coinciden'); return; }
       if (formData.password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres'); return; }
     }
-    if (activeStep === 1) {
-      if (!formData.empresaId || !formData.ciudad) { setError('ID de empresa y ciudad son obligatorios'); return; }
-      if (formData.empresaId.length < 2) { setError('El ID de empresa debe tener al menos 2 caracteres'); return; }
+if (activeStep === 1) {
+      if (!formData.empresaId || !formData.sucursal || !formData.pais) { 
+        setError('Todos los campos son obligatorios'); 
+        return; 
+      }
+      if (formData.empresaId.length < 2) { 
+        setError('El ID de empresa debe tener al menos 2 caracteres'); 
+        return; 
+      }
+      if (formData.sucursal.trim().length < 2) {
+        setError('La sucursal debe tener al menos 2 caracteres');
+        return;
+      }
     }
     setError('');
     setActiveStep(prev => prev + 1);
@@ -149,19 +214,24 @@ export default function Register() {
     setError('');
     try {
       const diasTrial = formData.planSeleccionado ? 3 : 7;
-      const response = await fetch(`${API_BASE}/api/registro`, {
+const response = await fetch(`${API_BASE}/api/registro`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: formData.email, password: formData.password,
-          ciudad: formData.ciudad, empresaId: formData.empresaId,
-          plan: formData.planSeleccionado || 'trial', diasTrial,
+          email: formData.email, 
+          password: formData.password,
+          ciudad: formData.sucursal,    
+          pais: formData.pais,          
+          empresaId: formData.empresaId,
+          plan: formData.planSeleccionado || 'trial', 
+          diasTrial,
         })
       });
       const data = await response.json();
-      if (response.ok) {
+if (response.ok) {
         localStorage.setItem('empresaId', data.empresaId);
-        localStorage.setItem('ciudad', formData.ciudad);
+        localStorage.setItem('ciudad', formData.sucursal);   
+        localStorage.setItem('pais', formData.pais);          
         localStorage.setItem('userEmail', formData.email);
         localStorage.setItem('plan', formData.planSeleccionado || 'trial');
         if (!formData.planSeleccionado) {
@@ -366,11 +436,29 @@ export default function Register() {
                   </div>
                 )}
 
-                {/* STEP 1: empresa */}
+{/* STEP 1: empresa */}
                 {activeStep === 1 && (
                   <div>
-                    <InputField icon={Icons.building} label="ID de Empresa" value={formData.empresaId} onChange={handleChange('empresaId')} />
-                    <SelectField icon={Icons.pin} label="Ciudad" value={formData.ciudad} onChange={handleChange('ciudad')} options={ciudades} />
+                    <InputField 
+                      icon={Icons.building} 
+                      label="Empresa u organización" 
+                      value={formData.empresaId} 
+                      onChange={handleChange('empresaId')} 
+                    />
+                    <InputField 
+                      icon={Icons.pin} 
+                      label="Sucursal o ubicación" 
+                      value={formData.sucursal} 
+                      onChange={handleChange('sucursal')}
+                      helpText="Nombre del sitio físico donde están las impresoras. Ejemplos: 'Oficina Centro', 'Sucursal Palermo', 'Bodega Norte'. Si solo tienes una ubicación, usa el nombre de tu ciudad."
+                    />
+                    <SelectField 
+                      icon={Icons.pin} 
+                      label="País" 
+                      value={formData.pais} 
+                      onChange={handleChange('pais')} 
+                      options={COUNTRIES} 
+                    />
                   </div>
                 )}
 
@@ -407,15 +495,16 @@ export default function Register() {
                       <div style={{ fontSize: 12, fontWeight: 500, color: '#999', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
                         Resumen
                       </div>
-                      {[
+                    {[
                         { label: 'Email', value: formData.email },
                         { label: 'Empresa', value: formData.empresaId },
-                        { label: 'Ciudad', value: formData.ciudad },
+                        { label: 'Sucursal o ubicación', value: formData.sucursal },
+                        { label: 'País', value: COUNTRIES.find(c => c.code === formData.pais)?.name || formData.pais },
                       ].map((item, i) => (
                         <div key={i} style={{
                           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                           padding: '8px 0',
-                          borderBottom: i < 2 ? '1px solid #f0f0f0' : 'none',
+                          borderBottom: i < 3 ? '1px solid #f0f0f0' : 'none',
                         }}>
                           <span style={{ fontSize: 13, color: '#999' }}>{item.label}</span>
                           <span style={{ fontSize: 14, color: '#1a1a1a', fontWeight: 500 }}>{item.value}</span>

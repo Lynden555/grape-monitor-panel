@@ -151,13 +151,12 @@ const Icons = {
    MAIN COMPONENT
    ══════════════════════════════════════════════════ */
 export default function Login() {
-  const [formData, setFormData] = useState({ email: '', password: '', ciudad: '', empresaId: '' });
+  const [formData, setFormData] = useState({ email: '', password: '', sucursal: '', empresaId: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const ciudades = ['Mexicali', 'Tijuana', 'Ensenada', 'Rosarito', 'Tecate'];
 
   const handleChange = (field) => (e) => {
     setFormData(prev => ({ ...prev, [field]: e.target.value }));
@@ -170,10 +169,15 @@ export default function Login() {
     setError('');
 
     try {
-      const response = await fetch(`${API_BASE}/login`, {
+const response = await fetch(`${API_BASE}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          ciudad: formData.sucursal,   
+          empresaId: formData.empresaId,
+        })
       });
 
       const data = await response.json();
@@ -181,7 +185,8 @@ export default function Login() {
       if (response.ok) {
         setSuccess('¡Login exitoso! Redirigiendo...');
         localStorage.setItem('empresaId', data.empresaId);
-        localStorage.setItem('ciudad', formData.ciudad);
+        localStorage.setItem('ciudad', formData.sucursal);   
+        localStorage.setItem('pais', data.pais || 'MX');       
         localStorage.setItem('userEmail', formData.email);
         if (data.licencia) {
           localStorage.setItem('plan', data.licencia.plan);
@@ -378,11 +383,16 @@ export default function Login() {
               </motion.div>
 
               <motion.div variants={fadeUp}>
-                <SelectField icon={Icons.pin} label="Ciudad" value={formData.ciudad} onChange={handleChange('ciudad')} options={ciudades} />
+                <InputField 
+                  icon={Icons.pin} 
+                  label="Sucursal o ubicación" 
+                  value={formData.sucursal} 
+                  onChange={handleChange('sucursal')} 
+                />
               </motion.div>
 
               <motion.div variants={fadeUp}>
-                <InputField icon={Icons.building} label="Empresa ID" value={formData.empresaId} onChange={handleChange('empresaId')} />
+                <InputField icon={Icons.building} label="Empresa u organización" value={formData.empresaId} onChange={handleChange('empresaId')} />
               </motion.div>
 
               {/* alerts */}
