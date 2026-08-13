@@ -121,7 +121,7 @@ const {
   useEffect(() => {
     const { empresaId } = getScope();
     if (!empresaId) {
-      window.location.replace('/#/login');
+      window.location.replace('/login');
       return;
     }
     setIsAuthReady(true);
@@ -166,7 +166,7 @@ const {
         setSelectedEmpresa(null);
         clearPrinters();
         localStorage.removeItem('selectedEmpresaId');
-        window.location.replace('/#/login');
+        window.location.replace('/login');
         return false;
       }
       return true;
@@ -450,8 +450,9 @@ const handleConfirmRenamePrinter = async () => {
         gridTemplateColumns: '320px 1fr',
         gap: 2,
         p: 2,
-        minHeight: '100vh',
-background: '#fcfcfc',
+        height: '100vh',
+        overflow: 'hidden',
+        background: '#fcfcfc',
       }}
     >
 <Sidebar
@@ -486,7 +487,7 @@ background: '#fcfcfc',
         onMoveEmpresaToFolder={moveEmpresaToFolder}
       />
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, minHeight: 0, overflowY: 'auto' }}>
         <PulseBar />
 
         {mode === 'create' && (

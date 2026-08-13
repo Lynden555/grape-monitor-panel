@@ -52,7 +52,10 @@ const Sidebar = ({
         boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
         overflow: 'hidden',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        height: '100%',
+        maxHeight: '100%',
+        minHeight: 0
       }}
     >
       <SidebarActions
@@ -118,7 +121,17 @@ const Sidebar = ({
             {currentFolderId ? 'Contenido de la carpeta' : 'Empresas y Carpetas'}
           </ListSubheader>
         }
-        sx={{ flex: 1, overflowY: 'auto' }}
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          '& .MuiListSubheader-root': {
+            position: 'sticky',
+            top: 0,
+            zIndex: 1,
+            bgcolor: '#ffffff'
+          }
+        }}
       >
         {loading && (
           <Box sx={{ px: 2, py: 1 }}>

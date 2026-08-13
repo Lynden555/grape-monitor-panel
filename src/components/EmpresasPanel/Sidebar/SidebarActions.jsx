@@ -68,28 +68,54 @@ bgcolor: '#fff5f5',
       <Box sx={{ p: 2, borderBottom: '1px solid #f0f0f0'}}>
         <Button
           fullWidth
+          startIcon={<AddCircleIcon sx={{ fontSize: '22px !important' }} />}
+          onClick={onCreateEmpresa}
+          sx={{
+            color: '#ffffff',
+            fontWeight: 800,
+            fontSize: '15px',
+            textTransform: 'none',
+            borderRadius: '12px',
+            bgcolor: '#7c3aed',
+            border: 'none',
+            py: 1.6,
+            mb: 1.5,
+            boxShadow: '0 6px 18px -6px rgba(124,58,237,0.65)',
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              bgcolor: '#6d28d9',
+              boxShadow: '0 8px 22px -6px rgba(124,58,237,0.8)',
+              transform: 'translateY(-1px)'
+            }
+          }}
+        >
+          Agregar Cliente
+        </Button>
+
+        <Button
+          fullWidth
           startIcon={<CreateNewFolderIcon />}
           onClick={onCreateFolder}
           disabled={loading}
           sx={{
-color: '#ffffff',
-fontWeight: 800,
-textTransform: 'none',
-borderRadius: '10px',
-bgcolor: '#1a1a1a',
-boxShadow: 'none',
-border: 'none',
-mb: 1,
-'&:hover': {
-  bgcolor: '#0a0a0a',
-  boxShadow: 'none',
-  border: 'none',
-  textShadow: 'none',
-  transform: 'none'
-},
+            color: '#52525b',
+            fontWeight: 700,
+            fontSize: '14px',
+            textTransform: 'none',
+            borderRadius: '10px',
+            bgcolor: '#ffffff',
+            boxShadow: 'none',
+            border: '1.5px solid #e8e8e8',
+            py: 1,
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              bgcolor: '#fafafa',
+              border: '1.5px solid #d4d4d8',
+              boxShadow: 'none'
+            },
             '&:disabled': {
               opacity: 0.6,
-              bgcolor: '#cccccc'
+              bgcolor: '#f4f4f5'
             }
           }}
         >
@@ -98,48 +124,26 @@ mb: 1,
 
         <Button
           fullWidth
-          startIcon={<AddCircleIcon />}
-          onClick={onCreateEmpresa}
-          sx={{
-color: '#8b5cf6',
-fontWeight: 800,
-textTransform: 'none',
-borderRadius: '10px',
-bgcolor: '#ffffff',
-boxShadow: 'none',
-border: '1.5px solid rgba(139,92,246,0.35)',
-'&:hover': {
-  bgcolor: 'rgba(139,92,246,0.05)',
-  boxShadow: 'none',
-  border: '1.5px solid #8b5cf6',
-  textShadow: 'none',
-  transform: 'none'
-}
-          }}
-        >
-          Agregar Cliente
-        </Button>
-
-        <Button
-          fullWidth
           startIcon={<DownloadIcon />}
           onClick={onDownloadAgent}
           sx={{
-color: '#1a1a1a',
-fontWeight: 800,
-textTransform: 'none',
-borderRadius: '10px',
-bgcolor: '#ffffff',
-boxShadow: 'none',
-border: '1.5px solid #e8e8e8',
-mt: 2,
-'&:hover': {
-  bgcolor: '#f3f3f3',
-  boxShadow: 'none',
-  border: '1.5px solid #d0d0d0',
-  textShadow: 'none',
-  transform: 'none'
-}
+            color: '#5b21b6',
+            fontWeight: 800,
+            fontSize: '14px',
+            textTransform: 'none',
+            borderRadius: '10px',
+            bgcolor: 'rgba(139,92,246,0.07)',
+            boxShadow: 'none',
+            border: '1.5px solid rgba(139,92,246,0.28)',
+            py: 1.2,
+            mt: 2,
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              bgcolor: 'rgba(139,92,246,0.13)',
+              border: '1.5px solid #8b5cf6',
+              boxShadow: 'none',
+              transform: 'translateY(-1px)'
+            }
           }}
         >
           Descargar Agente

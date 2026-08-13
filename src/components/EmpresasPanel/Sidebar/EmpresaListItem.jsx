@@ -45,7 +45,12 @@ const EmpresaListItem = ({
        border: '1px solid #f0f0f0',
         transition: 'all 0.3s ease',
         padding: '14px 16px',
-        height: '65px'
+        minHeight: '65px',
+        alignItems: 'flex-start',
+        '&:hover .empresa-nombre': {
+          whiteSpace: 'normal',
+          overflow: 'visible'
+        }
       }}
     >
       <Box
@@ -65,12 +70,18 @@ const EmpresaListItem = ({
 
       <ListItemText
         primary={
-          <Typography sx={{
-            fontWeight: 800,
-            color: isSelected ? '#7c3aed' : '#1a1a1a',
-            fontSize: '16px',
-            letterSpacing: '0.2px'
-          }}>
+          <Typography
+            className="empresa-nombre"
+            sx={{
+              fontWeight: 800,
+              color: isSelected ? '#7c3aed' : '#1a1a1a',
+              fontSize: '16px',
+              letterSpacing: '0.2px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}
+          >
             {empresa.nombre}
           </Typography>
         }

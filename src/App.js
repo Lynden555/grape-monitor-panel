@@ -1,5 +1,7 @@
 import React from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Landing from './components/Landing/Landing';
+import Precios from './components/Landing/Precios';
 import Login from './components/Login';
 import Register from './components/Register';
 import Monitor from './components/EmpresasPanel';
@@ -30,6 +32,8 @@ function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/precios" element={<Precios />} />
         <Route path="/login" element={
           <PublicRoute>
             <Login />
@@ -46,7 +50,7 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="/planes" element={<Planes />} />
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

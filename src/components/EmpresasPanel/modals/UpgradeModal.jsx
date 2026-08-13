@@ -13,11 +13,11 @@ const PLAN_OPTIONS = [
     nombre: 'Starter',
     precio: '$1,500',
     periodo: '/mes',
-    impresoras: 50,
+    impresoras: 100,
     color: '#8b5cf6',
     destacado: false,
     beneficios: [
-      'Hasta 50 impresoras',
+      'Hasta 100 impresoras',
       'Monitoreo en tiempo real',
       'Reportes mensuales PDF',
       'Soporte por email',
@@ -25,27 +25,27 @@ const PLAN_OPTIONS = [
   },
   {
     nombre: 'Pro',
-    precio: '$4,000',
+    precio: '$3,200',
     periodo: '/mes',
-    impresoras: 200,
+    impresoras: 250,
     color: '#ec4899',
     destacado: true,
     beneficios: [
-      'Hasta 200 impresoras',
+      'Hasta 250 impresoras',
       'Todo lo de Starter',
       'Soporte prioritario',
-      'API access',
+      'Historial y exportación',
     ]
   },
   {
     nombre: 'Enterprise',
-    precio: '$8,000',
+    precio: '$6,000',
     periodo: '/mes',
-    impresoras: 500,
+    impresoras: 600,
     color: '#06b6d4',
     destacado: false,
     beneficios: [
-      'Hasta 500 impresoras',
+      'Hasta 600 impresoras',
       'Todo lo de Pro',
       'Onboarding dedicado',
       'SLA garantizado',
@@ -295,7 +295,7 @@ const UpgradeModal = ({ open, onClose, planActual, impresorasActivas, limiteActu
           fontSize: '12px',
           mt: 3,
         }}>
-          ¿Necesitas más de 500 impresoras? Contacta para plan Custom
+          ¿Necesitas más de 600 impresoras? Contacta para plan Custom
         </Typography>
       </DialogContent>
 

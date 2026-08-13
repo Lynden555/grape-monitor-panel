@@ -9,6 +9,24 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { tonerPercent } from '../utils/tonerHelpers';
 
+const COLORES_TINTA = {
+  cyan: '#06b6d4',
+  magenta: '#ec4899',
+  yellow: '#eab308',
+  black: '#3f3f46',
+  amarillo: '#eab308',
+  negro: '#3f3f46',
+};
+
+const colorDeTinta = (nombre = '') => {
+  const n = nombre.toLowerCase();
+  const clave = Object.keys(COLORES_TINTA).find((k) => n.includes(k));
+  return clave ? COLORES_TINTA[clave] : '#8b5cf6';
+};
+
+const titulizar = (texto = '') =>
+  texto.replace(/\b[a-záéíóúñ]/g, (c) => c.toUpperCase());
+
 const PrinterCard = ({
   printer,
   isExpanded,
@@ -273,11 +291,13 @@ const PrinterCard = ({
                 {(latest.lastSupplies || []).map((s, idx) => {
                   const pct = tonerPercent(s.level, s.max);
                   const isLow = isFinite(pct) && pct <= 20;
+                  const nombreTinta = titulizar(s.name || `Supply ${idx + 1}`);
+                  const colorBarra = isLow ? '#dc2626' : colorDeTinta(s.name);
                   return (
                     <Box key={idx}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                         <Typography sx={{ fontSize: '13px', color: '#1a1a1a' }}>
-                          {s.name || `Supply ${idx + 1}`}
+                          {nombreTinta}
                         </Typography>
                         <Typography sx={{
                           fontSize: '13px',
@@ -291,11 +311,12 @@ const PrinterCard = ({
                         variant="determinate"
                         value={isFinite(pct) ? pct : 0}
                         sx={{
-                          height: 6,
-                          borderRadius: 6,
+                          height: 10,
+                          borderRadius: 10,
                           bgcolor: '#f0f0f0',
                           '& .MuiLinearProgress-bar': {
-                            bgcolor: isLow ? '#dc2626' : '#8b5cf6',
+                            bgcolor: colorBarra,
+                            borderRadius: 10,
                             transition: 'width .3s'
                           }
                         }}
