@@ -3,6 +3,13 @@ import {
   Box, Card, CardContent, Typography, Button, Stack, LinearProgress
 } from '@mui/material';
 import DevicesIcon from '@mui/icons-material/Devices';
+import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
+import PlaceIcon from '@mui/icons-material/Place';
+import EditIcon from '@mui/icons-material/Edit';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import CloseIcon from '@mui/icons-material/Close';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
 import PrinterCard from './PrinterCard';
 import { handleLogout } from '../utils/scopeHelpers';
 
@@ -19,7 +26,16 @@ const EmpresaDetail = ({
   generandoPDF,
   onViewApiKey,
   onDeleteEmpresa,
+  onAgregarUbicacion,
+  onEliminarUbicacion,
+  onEditarReferencia,
 }) => {
+  const ubicacion = empresa?.ubicacion;
+  const tieneUbicacion =
+    typeof ubicacion?.lat === 'number' && typeof ubicacion?.lng === 'number';
+  const linkMaps = tieneUbicacion
+    ? `https://www.google.com/maps?q=${ubicacion.lat},${ubicacion.lng}`
+    : null;
   return (
     <Card
       sx={{
@@ -49,6 +65,84 @@ const EmpresaDetail = ({
           {empresa.nombre}
         </Typography>
         <Box sx={{ flex: 1 }} />
+
+        {!tieneUbicacion && (
+          <Button
+            size="small"
+            startIcon={<AddLocationAltIcon />}
+            onClick={onAgregarUbicacion}
+            sx={{
+              color: '#ffffff',
+              bgcolor: '#7c3aed',
+              textTransform: 'none',
+              fontWeight: 800,
+              borderRadius: '8px',
+              px: 2,
+              boxShadow: '0 4px 14px -4px rgba(124,58,237,0.8)',
+              transition: 'all 0.2s',
+              '&:hover': {
+                bgcolor: '#8b5cf6',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 6px 18px -4px rgba(124,58,237,0.9)',
+              }
+            }}
+          >
+            Agregar ubicación
+          </Button>
+        )}
+
+        {tieneUbicacion && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              bgcolor: 'rgba(74,222,128,0.12)',
+              border: '1px solid rgba(74,222,128,0.35)',
+              borderRadius: '8px',
+              pl: 1,
+              pr: 0.5,
+              py: 0.25,
+            }}
+          >
+            <Tooltip title={ubicacion.referencia || ubicacion.direccion || 'Abrir en Google Maps'}>
+              <Box
+                component="a"
+                href={linkMaps}
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.75,
+                  color: '#4ade80',
+                  textDecoration: 'none',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  py: 0.5,
+                  '&:hover': { color: '#86efac' }
+                }}
+              >
+                <PlaceIcon sx={{ fontSize: 17 }} />
+                Ver ubicación
+                <OpenInNewIcon sx={{ fontSize: 13, opacity: 0.7 }} />
+              </Box>
+            </Tooltip>
+            <Tooltip title="Eliminar ubicación">
+              <IconButton
+                size="small"
+                onClick={onEliminarUbicacion}
+                sx={{
+                  color: 'rgba(255,255,255,0.35)',
+                  '&:hover': { color: '#f87171', bgcolor: 'rgba(248,113,113,0.1)' }
+                }}
+              >
+                <CloseIcon sx={{ fontSize: 15 }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )}
+
         <Button
           variant="outlined"
           size="small"
@@ -86,6 +180,62 @@ const EmpresaDetail = ({
           Eliminar
         </Button>
       </Box>
+
+      {tieneUbicacion && (ubicacion.referencia || ubicacion.direccion) && (
+        <Box
+          sx={{
+            px: 3,
+            py: 1.5,
+            bgcolor: '#faf8ff',
+            borderBottom: '1px solid #ede9fe',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 1.25,
+          }}
+        >
+          <PlaceIcon sx={{ color: '#7c3aed', fontSize: 20, mt: '1px', flexShrink: 0 }} />
+          <Box sx={{ order: 2, ml: 'auto', flexShrink: 0 }}>
+            <Tooltip title="Editar referencia">
+              <IconButton
+                size="small"
+                onClick={onEditarReferencia}
+                sx={{
+                  color: '#a78bfa',
+                  '&:hover': { color: '#7c3aed', bgcolor: 'rgba(139,92,246,0.1)' }
+                }}
+              >
+                <EditIcon sx={{ fontSize: 17 }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+          <Box sx={{ minWidth: 0 }}>
+            {ubicacion.referencia && (
+              <Typography
+                sx={{
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#1a1a1a',
+                  lineHeight: 1.45,
+                }}
+              >
+                {ubicacion.referencia}
+              </Typography>
+            )}
+            {ubicacion.direccion && (
+              <Typography
+                sx={{
+                  fontSize: '12.5px',
+                  color: '#777',
+                  lineHeight: 1.45,
+                  mt: ubicacion.referencia ? '2px' : 0,
+                }}
+              >
+                {ubicacion.direccion}
+              </Typography>
+            )}
+          </Box>
+        </Box>
+      )}
 
       <CardContent sx={{ p: 2 }}>
         {loadingPrinters && <LinearProgress sx={{

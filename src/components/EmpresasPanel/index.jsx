@@ -9,6 +9,9 @@ import { usePlanInfo } from './hooks/usePlanInfo';
 
 // Componentes
 import Sidebar from './Sidebar/Sidebar';
+import UbicacionModal from './modals/UbicacionModal';
+import ReferenciaModal from './modals/ReferenciaModal';
+import { API_BASE } from './constants';
 import PulseBar from './MainPanel/PulseBar';
 import EmptyState from './MainPanel/EmptyState';
 import CreateEmpresaForm from './MainPanel/CreateEmpresaForm';
@@ -53,6 +56,8 @@ const [modalOpen, setModalOpen] = useState(false);
   const [empresaRecienCreada, setEmpresaRecienCreada] = useState(null);
   const [downloadAgentOpen, setDownloadAgentOpen] = useState(false);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [ubicacionModalOpen, setUbicacionModalOpen] = useState(false);
+  const [referenciaModalOpen, setReferenciaModalOpen] = useState(false);
   const [upgradeMotivo, setUpgradeMotivo] = useState(null);
 
   const [currentFolderId, setCurrentFolderId] = useState(null);
@@ -442,6 +447,37 @@ const handleConfirmRenamePrinter = async () => {
   const folderPath = useMemo(() => getFolderPath(currentFolderId), [folders, currentFolderId]);
   const childFolders = useMemo(() => getChildFolders(currentFolderId), [folders, currentFolderId]);
 
+  const handleUbicacionGuardada = (ubicacion) => {
+    setSelectedEmpresa((prev) => (prev ? { ...prev, ubicacion } : prev));
+    setEmpresas((prev) =>
+      prev.map((e) => (e._id === selectedEmpresa?._id ? { ...e, ubicacion } : e))
+    );
+  };
+
+  const handleEliminarUbicacion = async () => {
+    if (!selectedEmpresa) return;
+    const confirmado = window.confirm(
+      `¿Eliminar la ubicación de "${selectedEmpresa.nombre}"?\n\nTendrás que volver a capturarla.`
+    );
+    if (!confirmado) return;
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/empresas/${selectedEmpresa._id}/ubicacion`,
+        { method: 'DELETE' }
+      );
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'No se pudo eliminar');
+
+      setSelectedEmpresa((prev) => (prev ? { ...prev, ubicacion: undefined } : prev));
+      setEmpresas((prev) =>
+        prev.map((e) => (e._id === selectedEmpresa._id ? { ...e, ubicacion: undefined } : e))
+      );
+    } catch (e) {
+      setErrorMsg(`Error al eliminar ubicación: ${e.message}`);
+    }
+  };
+
   // ============== RENDER ==============
   return (
     <Box
@@ -515,6 +551,27 @@ const handleConfirmRenamePrinter = async () => {
             generandoPDF={generandoPDF}
             onViewApiKey={handleViewApiKey}
             onDeleteEmpresa={handleDeleteSelectedEmpresa}
+            onAgregarUbicacion={() => setUbicacionModalOpen(true)}
+            onEliminarUbicacion={handleEliminarUbicacion}
+            onEditarReferencia={() => setReferenciaModalOpen(true)}
+          />
+        )}
+
+        {selectedEmpresa && (
+          <UbicacionModal
+            open={ubicacionModalOpen}
+            onClose={() => setUbicacionModalOpen(false)}
+            empresa={selectedEmpresa}
+            onGuardada={handleUbicacionGuardada}
+          />
+        )}
+
+        {selectedEmpresa && (
+          <ReferenciaModal
+            open={referenciaModalOpen}
+            onClose={() => setReferenciaModalOpen(false)}
+            empresa={selectedEmpresa}
+            onGuardada={handleUbicacionGuardada}
           />
         )}
 
