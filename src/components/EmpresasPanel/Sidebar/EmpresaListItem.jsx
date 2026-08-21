@@ -46,6 +46,7 @@ const EmpresaListItem = ({
         transition: 'all 0.3s ease',
         padding: '14px 16px',
         minHeight: '65px',
+        position: 'relative',
         alignItems: 'flex-start',
         '&:hover .empresa-nombre': {
           whiteSpace: 'normal',
@@ -96,6 +97,30 @@ const EmpresaListItem = ({
         }
       />
 
+      <Box
+        sx={{
+          width: '9px',
+          height: '9px',
+          borderRadius: '50%',
+          flexShrink: 0,
+          position: 'absolute',
+          top: '10px',
+          right: '10px',
+          bgcolor:
+            empresa.totalImpresoras === 0
+              ? '#d4d4d8'
+              : empresa.impresorasOnline > 0
+                ? '#22c55e'
+                : '#ef4444',
+          boxShadow:
+            empresa.totalImpresoras === 0
+              ? 'none'
+              : empresa.impresorasOnline > 0
+                ? '0 0 6px rgba(34,197,94,0.9)'
+                : '0 0 6px rgba(239,68,68,0.8)',
+        }}
+      />
+
       <IconButton
         size="small"
         className="empresa-actions"
@@ -106,6 +131,7 @@ const EmpresaListItem = ({
         sx={{
           opacity: 0,
           color: '#ccc',
+          mt: 1.5,
           transition: 'opacity 0.2s',
          '&:hover': { color: '#1a1a1a' }
         }}
