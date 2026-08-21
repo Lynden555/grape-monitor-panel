@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { API_BASE } from '../constants';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, Typography, Box, Chip
@@ -54,6 +55,29 @@ const PLAN_OPTIONS = [
 ];
 
 const UpgradeModal = ({ open, onClose, planActual, impresorasActivas, limiteActual, motivo }) => {
+  const [procesando, setProcesando] = useState(null);
+  const [errorPago, setErrorPago] = useState('');
+
+  const irACheckout = async (plan) => {
+    setProcesando(plan);
+    setErrorPago('');
+    try {
+      const res = await fetch(`${API_BASE}/api/stripe/checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ plan })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'No se pudo iniciar el pago');
+      window.location.href = data.url;
+    } catch (e) {
+      setErrorPago(e.message);
+      setProcesando(null);
+    }
+  };
 
   // Mensaje contextual según el motivo de apertura
   const getMensajeContexto = () => {
@@ -140,6 +164,20 @@ const UpgradeModal = ({ open, onClose, planActual, impresorasActivas, limiteActu
       </DialogTitle>
 
       <DialogContent sx={{ p: 3, pt: 2 }}>
+        {errorPago && (
+          <Box sx={{
+            mb: 2,
+            p: 1.5,
+            borderRadius: '10px',
+            bgcolor: 'rgba(239, 68, 68, 0.12)',
+            border: '1px solid rgba(239, 68, 68, 0.35)',
+          }}>
+            <Typography sx={{ color: '#fca5a5', fontSize: '13px', textAlign: 'center' }}>
+              {errorPago}
+            </Typography>
+          </Box>
+        )}
+
         {/* Cards de planes */}
         <Box sx={{
           display: 'grid',
@@ -259,10 +297,8 @@ const UpgradeModal = ({ open, onClose, planActual, impresorasActivas, limiteActu
 
               <Button
                 fullWidth
-                onClick={() => {
-                  // TODO: Conectar con Stripe Checkout cuando esté listo
-                  window.open(`mailto:grapelabs-contact@proton.me?subject=Upgrade a plan ${plan.nombre}&body=Hola, quiero actualizar mi cuenta al plan ${plan.nombre}.`);
-                }}
+                onClick={() => irACheckout(plan.nombre.toLowerCase())}
+                disabled={procesando !== null}
                 sx={{
                   bgcolor: plan.destacado ? plan.color : 'rgba(255, 255, 255, 0.05)',
                   color: 'white',
@@ -282,7 +318,9 @@ const UpgradeModal = ({ open, onClose, planActual, impresorasActivas, limiteActu
                   }
                 }}
               >
-                Elegir {plan.nombre}
+                {procesando === plan.nombre.toLowerCase()
+                  ? 'Redirigiendo...'
+                  : `Elegir ${plan.nombre}`}
               </Button>
             </Box>
           ))}

@@ -184,6 +184,7 @@ const response = await fetch(`${API_BASE}/login`, {
 
       if (response.ok) {
         setSuccess('¡Login exitoso! Redirigiendo...');
+        localStorage.setItem('token', data.token);
         localStorage.setItem('empresaId', data.empresaId);
         localStorage.setItem('ciudad', formData.sucursal);   
         localStorage.setItem('pais', data.pais || 'MX');       
