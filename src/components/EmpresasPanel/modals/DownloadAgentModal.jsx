@@ -5,8 +5,10 @@ import {
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 
-const AGENT_DOWNLOAD_URL = 'https://github.com/Lynden555/grapeassist-software/releases/download/2.9.7/Grape.Monitor.Setup.2.9.7.exe';
+const AGENT_DOWNLOAD_URL = 'https://github.com/Lynden555/grapeassist-software/releases/download/v3.1.0/Grape.Monitor.Setup.3.1.0.exe';
 
+
+////const AGENT_DOWNLOAD_URL = 'https://github.com/Lynden555/grapeassist-software/releases/download/2.9.7/Grape.Monitor.Setup.2.9.7.exe';
 ////const AGENT_DOWNLOAD_URL = 'https://github.com/Lynden555/grapeassist-software/releases/download/v2.5.0/Grape.Monitor.Setup.2.9.4.exe';
 
 
