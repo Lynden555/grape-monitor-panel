@@ -1,15 +1,37 @@
 import React, { useState } from 'react';
-import { Box, Typography, ListItemButton, ListItemText, IconButton } from '@mui/material';
+import { Box, Typography, IconButton } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import printerIcon from '../../images/printer.png';
+import { EMPRESA_COLORS } from '../constants';
+
+const TEXT = '#F4F1FB';
+const MUTED = 'rgba(244,241,251,0.42)';
+
+const colorDe = (empresa, index) => {
+  const semilla = String(empresa._id || '').slice(-4);
+  const n = parseInt(semilla, 16);
+  const i = Number.isFinite(n) ? n : index;
+  return EMPRESA_COLORS[i % EMPRESA_COLORS.length];
+};
 
 const EmpresaListItem = ({
   empresa,
+  index = 0,
   onSelectEmpresa,
   isSelected,
-  onEmpresaContextMenu
+  onEmpresaContextMenu,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
+
+  const total = empresa.totalImpresoras ?? 0;
+  const online = empresa.impresorasOnline ?? 0;
+  const acento = colorDe(empresa, index);
+
+  const led =
+    total === 0
+      ? { color: 'rgba(255,255,255,0.18)', glow: 'none' }
+      : online > 0
+        ? { color: '#22c55e', glow: '0 0 8px rgba(34,197,94,0.9)' }
+        : { color: '#ef4444', glow: '0 0 8px rgba(239,68,68,0.75)' };
 
   const handleDragStart = (e) => {
     setIsDragging(true);
@@ -17,107 +39,82 @@ const EmpresaListItem = ({
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  const handleDragEnd = () => {
-    setIsDragging(false);
-  };
-
   return (
-    <ListItemButton
-      selected={isSelected}
-      onClick={() => onSelectEmpresa(empresa)}
+    <Box
       draggable
       onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
+      onDragEnd={() => setIsDragging(false)}
+      onClick={() => onSelectEmpresa(empresa)}
       sx={{
-        color: 'white',
-'&.Mui-selected': {
-  bgcolor: 'rgba(139, 92, 246, 0.06)',
-  border: '1px solid rgba(139, 92, 246, 0.3)'
-},
-'&:hover': {
-  bgcolor: '#f8f8f8',
-          '& .empresa-actions': { opacity: 1 }
-        },
-        opacity: isDragging ? 0.5 : 1,
-        cursor: 'pointer',
-        borderRadius: '12px',
-        margin: '4px 8px',
-       border: '1px solid #f0f0f0',
-        transition: 'all 0.3s ease',
-        padding: '14px 16px',
-        minHeight: '65px',
         position: 'relative',
-        alignItems: 'flex-start',
-        '&:hover .empresa-nombre': {
-          whiteSpace: 'normal',
-          overflow: 'visible'
-        }
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.25,
+        pl: 1.75,
+        pr: 0.5,
+        py: 1.25,
+        minHeight: 54,
+        borderRadius: '12px',
+        cursor: 'pointer',
+        opacity: isDragging ? 0.45 : 1,
+        overflow: 'hidden',
+        bgcolor: isSelected ? 'rgba(139,92,246,0.16)' : 'transparent',
+        transition: 'background .18s ease',
+        '&:hover': {
+          bgcolor: isSelected ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.045)',
+          '& .empresa-actions': { opacity: 1 },
+        },
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          left: 0,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: '3px',
+          height: isSelected ? '70%' : '38%',
+          borderRadius: '0 3px 3px 0',
+          bgcolor: acento,
+          opacity: isSelected ? 1 : 0.65,
+          transition: 'all .22s ease',
+        },
       }}
     >
-      <Box
-        component="img"
-        src={printerIcon}
-        alt="Impresora"
-        sx={{
-          width: '28px',
-          height: '28px',
-          mr: 2,
-          filter: isSelected
-            ? 'brightness(1.2) saturate(1.5)'
-            : 'brightness(0.9) saturate(0.8)',
-          opacity: isSelected ? 1 : 0.9,
-        }}
-      />
-
-      <ListItemText
-        primary={
-          <Typography
-            className="empresa-nombre"
-            sx={{
-              fontWeight: 800,
-              color: isSelected ? '#7c3aed' : '#1a1a1a',
-              fontSize: '16px',
-              letterSpacing: '0.2px',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis'
-            }}
-          >
-            {empresa.nombre}
-          </Typography>
-        }
-        secondary={
-          <Typography sx={{
-            color: isSelected ? '#a78bfa' : '#999999',
-            fontSize: '0.8rem',
-            marginTop: '2px'
-          }}>
-            Click para ver impresoras
-          </Typography>
-        }
-      />
+      <Box sx={{ minWidth: 0, flex: 1 }}>
+        <Typography
+          sx={{
+            color: isSelected ? '#c4b5fd' : TEXT,
+            fontWeight: 600,
+            fontSize: '13.5px',
+            lineHeight: 1.35,
+            letterSpacing: '-0.01em',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
+          {empresa.nombre}
+        </Typography>
+        <Typography
+          sx={{
+            color: MUTED,
+            fontSize: '11px',
+            fontFamily: 'ui-monospace, monospace',
+            mt: '2px',
+          }}
+        >
+          {total === 0 ? 'sin equipos' : `${online}/${total} en línea`}
+        </Typography>
+      </Box>
 
       <Box
         sx={{
-          width: '9px',
-          height: '9px',
+          width: 8,
+          height: 8,
           borderRadius: '50%',
           flexShrink: 0,
-          position: 'absolute',
-          top: '10px',
-          right: '10px',
-          bgcolor:
-            empresa.totalImpresoras === 0
-              ? '#d4d4d8'
-              : empresa.impresorasOnline > 0
-                ? '#22c55e'
-                : '#ef4444',
-          boxShadow:
-            empresa.totalImpresoras === 0
-              ? 'none'
-              : empresa.impresorasOnline > 0
-                ? '0 0 6px rgba(34,197,94,0.9)'
-                : '0 0 6px rgba(239,68,68,0.8)',
+          bgcolor: led.color,
+          boxShadow: led.glow,
         }}
       />
 
@@ -130,15 +127,15 @@ const EmpresaListItem = ({
         }}
         sx={{
           opacity: 0,
-          color: '#ccc',
-          mt: 1.5,
-          transition: 'opacity 0.2s',
-         '&:hover': { color: '#1a1a1a' }
+          flexShrink: 0,
+          color: 'rgba(244,241,251,0.3)',
+          transition: 'opacity .18s ease',
+          '&:hover': { color: TEXT, bgcolor: 'rgba(255,255,255,0.08)' },
         }}
       >
-        <MoreVertIcon />
+        <MoreVertIcon sx={{ fontSize: 17 }} />
       </IconButton>
-    </ListItemButton>
+    </Box>
   );
 };
 
