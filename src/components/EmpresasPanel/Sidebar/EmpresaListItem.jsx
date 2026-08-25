@@ -26,12 +26,13 @@ const EmpresaListItem = ({
   const online = empresa.impresorasOnline ?? 0;
   const acento = colorDe(empresa, index);
 
-  const led =
-    total === 0
-      ? { color: 'rgba(255,255,255,0.18)', glow: 'none' }
-      : online > 0
-        ? { color: '#22c55e', glow: '0 0 8px rgba(34,197,94,0.9)' }
-        : { color: '#ef4444', glow: '0 0 8px rgba(239,68,68,0.75)' };
+  const LEDS = {
+    verde: { color: '#22c55e', glow: '0 0 8px rgba(34,197,94,0.9)' },
+    amarillo: { color: '#f59e0b', glow: '0 0 8px rgba(245,158,11,0.85)' },
+    rojo: { color: '#ef4444', glow: '0 0 8px rgba(239,68,68,0.8)' },
+    gris: { color: 'rgba(255,255,255,0.18)', glow: 'none' },
+  };
+  const led = LEDS[empresa.estadoFlota] || LEDS.gris;
 
   const handleDragStart = (e) => {
     setIsDragging(true);
@@ -103,7 +104,11 @@ const EmpresaListItem = ({
             mt: '2px',
           }}
         >
-          {total === 0 ? 'sin equipos' : `${online}/${total} en línea`}
+          {total === 0
+            ? 'sin equipos'
+            : empresa.estadoFlota === 'rojo'
+              ? `${online}/${total} · revisar`
+              : `${online}/${total} en línea`}
         </Typography>
       </Box>
 
