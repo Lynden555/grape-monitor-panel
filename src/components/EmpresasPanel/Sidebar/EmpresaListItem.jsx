@@ -19,6 +19,7 @@ const EmpresaListItem = ({
   onSelectEmpresa,
   isSelected,
   onEmpresaContextMenu,
+  carpetaNombre = null,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
 
@@ -104,6 +105,7 @@ const EmpresaListItem = ({
             mt: '2px',
           }}
         >
+          {carpetaNombre && `${carpetaNombre} · `}
           {total === 0
             ? 'sin equipos'
             : empresa.estadoFlota === 'rojo'

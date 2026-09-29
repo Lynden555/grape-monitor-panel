@@ -440,9 +440,16 @@ const handleConfirmRenamePrinter = async () => {
   };
 
   // ============== COMPUTED VALUES ==============
+  const [busqueda, setBusqueda] = useState('');
+
   const empresasEnCarpetaActual = useMemo(() => {
-    return getEmpresasInFolder(currentFolderId, empresas);
-  }, [empresas, currentFolderId, folderManager.empresaFolderAssignments]);
+    const base = getEmpresasInFolder(currentFolderId, empresas);
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return base;
+
+    const fuente = currentFolderId ? base : empresas;
+    return fuente.filter((e) => e.nombre?.toLowerCase().includes(q));
+  }, [empresas, currentFolderId, folderManager.empresaFolderAssignments, busqueda]);
 
   const folderPath = useMemo(() => getFolderPath(currentFolderId), [folders, currentFolderId]);
   const childFolders = useMemo(() => getChildFolders(currentFolderId), [folders, currentFolderId]);
@@ -516,6 +523,11 @@ const handleConfirmRenamePrinter = async () => {
         onFolderDrop={handleFolderDrop}
         onDragOver={handleDragOver}
         loadingEmpresas={loadingEmpresas}
+        empresasEnCarpetaActual={empresasEnCarpetaActual}
+        busqueda={busqueda}
+        onBuscar={setBusqueda}
+        asignaciones={folderManager.empresaFolderAssignments}
+        folders={folders}
         empresasEnCarpetaActual={empresasEnCarpetaActual}
         selectedEmpresa={selectedEmpresa}
         onSelectEmpresa={handleSelectEmpresa}

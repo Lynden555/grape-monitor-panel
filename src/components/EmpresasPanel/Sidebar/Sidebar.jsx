@@ -7,6 +7,8 @@ import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
 import FolderListItem from './FolderListItem';
 import EmpresaListItem from './EmpresaListItem';
 import { handleLogout } from '../utils/scopeHelpers';
@@ -36,6 +38,10 @@ const Sidebar = ({
   onDragOver,
   loadingEmpresas,
   empresasEnCarpetaActual,
+  busqueda = '',
+  onBuscar,
+  asignaciones = {},
+  folders = [],
   selectedEmpresa,
   onSelectEmpresa,
   onEmpresaContextMenu,
@@ -297,6 +303,63 @@ const Sidebar = ({
         </Tooltip>
       </Box>
 
+            {/* Buscador */}
+      <Box sx={{ px: 2, pb: 1.5, flexShrink: 0 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            px: 1.5,
+            height: 38,
+            borderRadius: '11px',
+            border: `1px solid ${busqueda ? 'rgba(139,92,246,0.4)' : LINE}`,
+            bgcolor: 'rgba(255,255,255,0.04)',
+            transition: 'border-color .18s ease',
+          }}
+        >
+          <SearchIcon sx={{ fontSize: 17, color: busqueda ? VIOLET : MUTED, flexShrink: 0 }} />
+          <Box
+            component="input"
+            value={busqueda}
+            onChange={(e) => onBuscar?.(e.target.value)}
+            placeholder={currentFolderId ? 'Buscar en esta carpeta' : 'Buscar cliente'}
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              border: 'none',
+              outline: 'none',
+              bgcolor: 'transparent',
+              color: TEXT,
+              fontFamily: 'inherit',
+              fontSize: '13px',
+              '&::placeholder': { color: 'rgba(244,241,251,0.3)' },
+            }}
+          />
+          {busqueda && (
+            <Box
+              component="button"
+              onClick={() => onBuscar?.('')}
+              sx={{
+                display: 'grid',
+                placeItems: 'center',
+                width: 18,
+                height: 18,
+                flexShrink: 0,
+                border: 'none',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                bgcolor: 'rgba(255,255,255,0.1)',
+                color: MUTED,
+                '&:hover': { color: TEXT, bgcolor: 'rgba(255,255,255,0.18)' },
+              }}
+            >
+              <CloseIcon sx={{ fontSize: 12 }} />
+            </Box>
+          )}
+        </Box>
+      </Box>
+
       {/* Ruta */}
       <Box
         sx={{
@@ -388,7 +451,7 @@ const Sidebar = ({
           '&::-webkit-scrollbar-track': { bgcolor: 'transparent' },
         }}
       >
-        {childFolders.map((folder) => (
+        {!busqueda && childFolders.map((folder) => (
           <FolderListItem
             key={folder._id}
             folder={folder}
@@ -408,6 +471,11 @@ const Sidebar = ({
             isSelected={selectedEmpresa?._id === empresa._id}
             onMoveToFolder={(folderId) => onMoveEmpresaToFolder(empresa._id, folderId)}
             onEmpresaContextMenu={onEmpresaContextMenu}
+            carpetaNombre={
+              busqueda && !currentFolderId
+                ? folders.find((f) => f._id === asignaciones[empresa._id])?.nombre
+                : null
+            }
           />
         ))}
 
