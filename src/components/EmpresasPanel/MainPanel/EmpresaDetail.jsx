@@ -29,6 +29,7 @@ const EmpresaDetail = ({
   onAgregarUbicacion,
   onEliminarUbicacion,
   onEditarReferencia,
+  onAgregarVisita,
 }) => {
   const ubicacion = empresa?.ubicacion;
   const tieneUbicacion =
@@ -276,6 +277,7 @@ const EmpresaDetail = ({
                 onGenerarPDF={onGenerarPDF}
                 generandoCorte={generandoCorte}
                 generandoPDF={generandoPDF}
+                onAgregarVisita={onAgregarVisita}
               />
             ))}
           </Stack>

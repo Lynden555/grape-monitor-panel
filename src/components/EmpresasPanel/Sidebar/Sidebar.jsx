@@ -9,6 +9,7 @@ import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
+import EventNoteIcon from '@mui/icons-material/EventNote';
 import FolderListItem from './FolderListItem';
 import EmpresaListItem from './EmpresaListItem';
 import { handleLogout } from '../utils/scopeHelpers';
@@ -26,6 +27,8 @@ const Sidebar = ({
   onCreateEmpresa,
   onDownloadAgent,
   onOpenUpgrade,
+  onAbrirAgenda,
+  visitasPendientes = 0,
   loading,
   currentFolderId,
   folderPath,
@@ -277,6 +280,51 @@ const Sidebar = ({
             }}
           >
             <CreateNewFolderOutlinedIcon sx={{ fontSize: 18 }} />
+          </Box>
+        </Tooltip>
+
+                <Tooltip title="Visitas pendientes">
+          <Box
+            component="button"
+            onClick={onAbrirAgenda}
+            sx={{
+              position: 'relative',
+              width: 38,
+              height: 38,
+              display: 'grid',
+              placeItems: 'center',
+              borderRadius: '11px',
+              cursor: 'pointer',
+              border: `1px solid ${LINE}`,
+              bgcolor: 'rgba(255,255,255,0.04)',
+              color: MUTED,
+              transition: 'all .18s ease',
+              '&:hover': { color: TEXT, bgcolor: 'rgba(255,255,255,0.08)' },
+            }}
+          >
+            <EventNoteIcon sx={{ fontSize: 18 }} />
+            {visitasPendientes > 0 && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: -4,
+                  right: -4,
+                  minWidth: 17,
+                  height: 17,
+                  px: 0.5,
+                  borderRadius: '999px',
+                  display: 'grid',
+                  placeItems: 'center',
+                  bgcolor: '#16a34a',
+                  color: '#fff',
+                  fontSize: '10px',
+                  fontWeight: 800,
+                  fontFamily: 'ui-monospace, monospace',
+                }}
+              >
+                {visitasPendientes}
+              </Box>
+            )}
           </Box>
         </Tooltip>
 

@@ -7,6 +7,7 @@ import PrintIcon from '@mui/icons-material/Print';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import EventNoteIcon from '@mui/icons-material/EventNote';
 import { tonerPercent } from '../utils/tonerHelpers';
 
 const COLORES_TINTA = {
@@ -36,6 +37,7 @@ const PrinterCard = ({
   onGenerarPDF,
   generandoCorte,
   generandoPDF,
+  onAgregarVisita,
 }) => {
   const latest = printer.latest || {};
   const low = !!latest.lowToner;
@@ -267,6 +269,30 @@ const PrinterCard = ({
                     }}
                   >
                     {generandoPDF === printer._id ? '⌛ Generando...' : 'Generar PDF'}
+                  </Button>
+
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => onAgregarVisita?.(printer)}
+                    startIcon={<EventNoteIcon sx={{ fontSize: 17 }} />}
+                    sx={{
+                      borderColor: 'rgba(34, 197, 94, 0.35)',
+                      color: '#16a34a',
+                      fontWeight: 700,
+                      borderRadius: '8px',
+                      px: 2, py: 1,
+                      minWidth: '140px',
+                      boxShadow: 'none',
+                      textTransform: 'none',
+                      '&:hover': {
+                        bgcolor: 'rgba(34, 197, 94, 0.06)',
+                        borderColor: '#16a34a',
+                        boxShadow: 'none',
+                      }
+                    }}
+                  >
+                    Agendar visita
                   </Button>
                 </Stack>
 

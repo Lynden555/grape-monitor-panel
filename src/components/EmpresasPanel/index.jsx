@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Box } from '@mui/material';
 
 // Hooks
@@ -11,6 +11,8 @@ import { usePlanInfo } from './hooks/usePlanInfo';
 import Sidebar from './Sidebar/Sidebar';
 import UbicacionModal from './modals/UbicacionModal';
 import ReferenciaModal from './modals/ReferenciaModal';
+import VisitaModal from './modals/VisitaModal';
+import AgendaPanel from './modals/AgendaPanel';
 import { API_BASE } from './constants';
 import PulseBar from './MainPanel/PulseBar';
 import EmptyState from './MainPanel/EmptyState';
@@ -58,6 +60,25 @@ const [modalOpen, setModalOpen] = useState(false);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [ubicacionModalOpen, setUbicacionModalOpen] = useState(false);
   const [referenciaModalOpen, setReferenciaModalOpen] = useState(false);
+  const [visitaPrinter, setVisitaPrinter] = useState(null);
+  const [agendaOpen, setAgendaOpen] = useState(false);
+  const [visitasPendientes, setVisitasPendientes] = useState(0);
+
+  const cargarConteoVisitas = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/visitas`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      if (data.ok) setVisitasPendientes(data.data.length);
+    } catch (e) {
+      console.error('Error contando visitas:', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthReady) cargarConteoVisitas();
+  }, [isAuthReady, cargarConteoVisitas]);
   const [upgradeMotivo, setUpgradeMotivo] = useState(null);
 
   const [currentFolderId, setCurrentFolderId] = useState(null);
@@ -453,6 +474,13 @@ const handleConfirmRenamePrinter = async () => {
 
   const folderPath = useMemo(() => getFolderPath(currentFolderId), [folders, currentFolderId]);
   const childFolders = useMemo(() => getChildFolders(currentFolderId), [folders, currentFolderId]);
+  const handleIrAVisita = async (visita) => {
+    const emp = empresas.find((e) => e._id === visita.empresaId);
+    if (!emp) return;
+    setAgendaOpen(false);
+    await handleSelectEmpresa(emp);
+    setExpandedPrinterId(visita.printerId);
+  };
 
   const handleUbicacionGuardada = (ubicacion) => {
     setSelectedEmpresa((prev) => (prev ? { ...prev, ubicacion } : prev));
@@ -506,6 +534,8 @@ const handleConfirmRenamePrinter = async () => {
           setUpgradeMotivo(null); // Apertura manual desde botón
           setUpgradeModalOpen(true);
         }}
+        onAbrirAgenda={() => setAgendaOpen(true)}
+        visitasPendientes={visitasPendientes}
         planInfo={planInfo}
         planLoading={planLoading}
         porcentajeUso={porcentajeUso}
@@ -566,6 +596,7 @@ const handleConfirmRenamePrinter = async () => {
             onAgregarUbicacion={() => setUbicacionModalOpen(true)}
             onEliminarUbicacion={handleEliminarUbicacion}
             onEditarReferencia={() => setReferenciaModalOpen(true)}
+            onAgregarVisita={setVisitaPrinter}
           />
         )}
 
@@ -577,7 +608,20 @@ const handleConfirmRenamePrinter = async () => {
             onGuardada={handleUbicacionGuardada}
           />
         )}
+        <AgendaPanel
+          open={agendaOpen}
+          onClose={() => setAgendaOpen(false)}
+          onCambio={cargarConteoVisitas}
+          onIrAVisita={handleIrAVisita}
+        />
 
+        <VisitaModal
+          open={!!visitaPrinter}
+          onClose={() => setVisitaPrinter(null)}
+          printer={visitaPrinter}
+          clienteNombre={selectedEmpresa?.nombre}
+          onGuardada={cargarConteoVisitas}
+        />
         {selectedEmpresa && (
           <ReferenciaModal
             open={referenciaModalOpen}
