@@ -216,6 +216,7 @@ const AgendaPanel = ({ open, onClose, onCambio, onIrAVisita }) => {
                   href={`https://www.google.com/maps?q=${v.ubicacion.lat},${v.ubicacion.lng}`}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
                   sx={{
                     display: 'flex',
                     alignItems: 'flex-start',
