@@ -168,6 +168,19 @@ const PrinterCard = ({
                 {printer.model || printer.sysDescr || '—'}
               </Typography>
 
+              <Typography sx={{ color: '#999', fontSize: '12px', mt: 1 }}>Version</Typography>
+              <Typography sx={{
+                fontFamily: 'monospace',
+                fontWeight: 700,
+                color: !printer.agentVersion || printer.agentVersion === '1.0.0' ? '#f59e0b' : '#1a1a1a'
+              }}>
+                {!printer.agentVersion
+                  ? '—'
+                  : printer.agentVersion === '1.0.0'
+                    ? 'versión antigua'
+                    : `v${printer.agentVersion}`}
+              </Typography>
+
               <Typography sx={{ color: '#999', fontSize: '12px', mt: 1 }}>Última lectura</Typography>
               <Typography sx={{ fontFamily: 'monospace', color: '#1a1a1a', fontWeight: 700 }}>
                 {latest.lastSeenAt ? new Date(latest.lastSeenAt).toLocaleString() : '—'}
