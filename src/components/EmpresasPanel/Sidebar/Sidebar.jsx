@@ -3,6 +3,7 @@ import { Box, Typography, Tooltip, IconButton, LinearProgress } from '@mui/mater
 import AddIcon from '@mui/icons-material/Add';
 import CreateNewFolderOutlinedIcon from '@mui/icons-material/CreateNewFolderOutlined';
 import DownloadOutlinedIcon from '@mui/icons-material/Download';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
@@ -26,6 +27,7 @@ const Sidebar = ({
   onCreateFolder,
   onCreateEmpresa,
   onDownloadAgent,
+  onCorteMasivo,  
   onOpenUpgrade,
   onAbrirAgenda,
   visitasPendientes = 0,
@@ -347,6 +349,28 @@ const Sidebar = ({
             }}
           >
             <DownloadOutlinedIcon sx={{ fontSize: 18 }} />
+          </Box>
+        </Tooltip>
+
+        <Tooltip title="Corte masivo de contadores">
+          <Box
+            component="button"
+            onClick={onCorteMasivo}
+            sx={{
+              width: 38,
+              height: 38,
+              display: 'grid',
+              placeItems: 'center',
+              borderRadius: '11px',
+              cursor: 'pointer',
+              border: `1px solid ${LINE}`,
+              bgcolor: 'rgba(255,255,255,0.04)',
+              color: MUTED,
+              transition: 'all .18s ease',
+              '&:hover': { color: VIOLET, bgcolor: 'rgba(139,92,246,0.12)' },
+            }}
+          >
+            <ReceiptLongOutlinedIcon sx={{ fontSize: 18 }} />
           </Box>
         </Tooltip>
       </Box>

@@ -41,6 +41,7 @@ import ApiKeyModal from './modals/ApiKeyModal';
 import DownloadAgentModal from './modals/DownloadAgentModal';
 import UpgradeModal from './modals/UpgradeModal';
 import TrialExpiredModal from './modals/TrialExpiredModal';
+import CorteMasivoModal from './modals/CorteMasivoModal';
 
 // Utils
 import { getScope } from './utils/scopeHelpers';
@@ -63,6 +64,7 @@ const [modalOpen, setModalOpen] = useState(false);
   const [visitaPrinter, setVisitaPrinter] = useState(null);
   const [agendaOpen, setAgendaOpen] = useState(false);
   const [visitasPendientes, setVisitasPendientes] = useState(0);
+  const [corteMasivoAbierto, setCorteMasivoAbierto] = useState(false);  
 
   const cargarConteoVisitas = useCallback(async () => {
     try {
@@ -530,6 +532,7 @@ const handleConfirmRenamePrinter = async () => {
         onCreateFolder={() => setFolderDialogOpen(true)}
         onCreateEmpresa={() => { setMode('create'); setSelectedEmpresa(null); }}
         onDownloadAgent={() => setDownloadAgentOpen(true)}
+        onCorteMasivo={() => setCorteMasivoAbierto(true)}        
         onOpenUpgrade={() => {
           setUpgradeMotivo(null); // Apertura manual desde botón
           setUpgradeModalOpen(true);
@@ -718,6 +721,15 @@ const handleConfirmRenamePrinter = async () => {
         onClose={() => setDownloadAgentOpen(false)}
         onDownloadSuccess={(msg) => setSuccessMsg(msg)}
       />
+
+      <CorteMasivoModal
+        open={corteMasivoAbierto}
+        onClose={() => setCorteMasivoAbierto(false)}
+        folders={folders}
+        getChildFolders={getChildFolders}
+        getEmpresasInFolder={getEmpresasInFolder}        
+        empresas={empresas}
+      />      
 
       {/* ============== MODALES DE PLAN ============== */}
       <UpgradeModal
