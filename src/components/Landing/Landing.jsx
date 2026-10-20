@@ -187,7 +187,7 @@ export default function Landing() {
 
       <footer className={s.foot}>
         <div className={s.footIn}>
-          <span>© {new Date().getFullYear()} Grape Monitor · GrapeLabs · Sanchez Audelo Valeria Michelle · Ensenada, B.C.</span>
+          <span>© {new Date().getFullYear()} Grape Monitor · GrapeLabs · Valeria Michelle Sanchez Audelo · Ensenada, B.C.</span>
           <span className={s.footRight}>
             <Link to="/precios">Precios</Link>
             <a href={`mailto:${CONTACTO}`}>Contacto</a>
